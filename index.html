@@ -302,17 +302,39 @@
     </nav>
 
     <script>
-        // Изолируем логику, чтобы никакие ошибки не ломали UI
-        (function() {
-            // 1. Инициализация Telegram
-            const tg = window.Telegram.WebApp;
-            tg.expand();
-            tg.ready();
+        // Изолируем логику и ждем полной загрузки DOM-дерева
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Безопасная инициализация Telegram
+            // Если открыто не в Telegram, используем заглушку, чтобы код не ломался
+            const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : {
+                expand: () => {},
+                ready: () => {},
+                HapticFeedback: {
+                    selectionChanged: () => {},
+                    impactOccurred: () => {},
+                    notificationOccurred: () => {}
+                },
+                setHeaderColor: () => {},
+                setBackgroundColor: () => {},
+                showAlert: (msg) => alert(msg),
+                initDataUnsafe: { user: { id: 'test_123', first_name: 'Гость', username: 'guest' } }
+            };
 
-            // 2. Инициализация Supabase
+            try {
+                if (tg.expand) tg.expand();
+                if (tg.ready) tg.ready();
+            } catch(e) { console.warn("TG Init Error:", e); }
+
+            // 2. Безопасная инициализация Supabase
             const supabaseUrl = 'https://mjraxretmdniudrqhjrq.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qcmF4cmV0bWRuaXVkcnFoanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTg5OTYsImV4cCI6MjA5NTU3NDk5Nn0.Y_Zu3ZDer2kbwuFrVWko2s1Dgyb7JSG377kWfLunWIk';
-            const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            
+            let supabase = null;
+            if (window.supabase) {
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            } else {
+                console.error("Supabase CDN не загружен!");
+            }
 
             // ==========================================
             // ЛОГИКА НАСТРОЕК (Валюта и Тема)
@@ -324,7 +346,8 @@
             let currentTheme = localStorage.getItem('app_theme') || 'adaptive';
 
             const formatPrice = (usdPrice) => {
-                const converted = (usdPrice * rates[currentCurrency]).toFixed(currentCurrency === 'STARS' ? 0 : 0);
+                const val = parseFloat(usdPrice) || 0;
+                const converted = (val * rates[currentCurrency]).toFixed(currentCurrency === 'STARS' ? 0 : 0);
                 if (currentCurrency === 'USD') return `$${converted}`;
                 if (currentCurrency === 'STARS') return `${converted} ⭐`;
                 return `${converted} ${symbols[currentCurrency]}`;
@@ -339,35 +362,40 @@
 
             const applyTheme = (theme) => {
                 document.body.setAttribute('data-theme', theme);
-                if (theme === 'adaptive') {
-                    tg.setHeaderColor('bg_color');
-                    tg.setBackgroundColor('bg_color');
-                } else {
-                    tg.setHeaderColor(theme === 'dark' ? '#1c1c1e' : '#ffffff');
-                    tg.setBackgroundColor(theme === 'dark' ? '#1c1c1e' : '#ffffff');
-                }
+                try {
+                    if (theme === 'adaptive') {
+                        tg.setHeaderColor?.('bg_color');
+                        tg.setBackgroundColor?.('bg_color');
+                    } else {
+                        const color = theme === 'dark' ? '#1c1c1e' : '#ffffff';
+                        tg.setHeaderColor?.(color);
+                        tg.setBackgroundColor?.(color);
+                    }
+                } catch(e) {}
             };
 
-            // Применяем настройки при старте
             applyTheme(currentTheme);
-            document.getElementById('theme-select').value = currentTheme;
-            document.getElementById('currency-select').value = currentCurrency;
+            const themeSelect = document.getElementById('theme-select');
+            const currencySelect = document.getElementById('currency-select');
+            if (themeSelect) themeSelect.value = currentTheme;
+            if (currencySelect) currencySelect.value = currentCurrency;
 
             // ==========================================
-            // НАДЕЖНАЯ НАВИГАЦИЯ (без onclick в HTML)
+            // НАДЕЖНАЯ НАВИГАЦИЯ
             // ==========================================
             const switchTab = (tabId) => {
-                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+                // Прячем все вкладки
+                document.querySelectorAll('.view-section').forEach(el => {
+                    el.classList.remove('active');
+                });
                 
+                // Показываем нужную
                 const target = document.getElementById(tabId);
                 if (target) {
-                    target.style.display = 'none';
-                    target.offsetHeight; 
-                    target.style.display = '';
                     target.classList.add('active');
                 }
                 
-                // Обновляем стили нижнего меню
+                // Обновляем иконки в меню
                 document.querySelectorAll('.nav-btn').forEach(btn => {
                     if (btn.getAttribute('data-target') === tabId) {
                         btn.classList.replace('text-tg-hint', 'text-tg-text');
@@ -377,20 +405,21 @@
                 });
 
                 if (tabId === 'view-tasks') loadTasks();
-                tg.HapticFeedback.selectionChanged();
+                try { tg.HapticFeedback?.selectionChanged?.(); } catch(e){}
             };
 
-            // Привязка кликов ко всем элементам с классом nav-link
+            // Делегирование событий клика для навигации
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', (e) => {
-                    e.preventDefault(); // Предотвращаем стандартное поведение
-                    const targetId = link.getAttribute('data-target');
-                    if(targetId) switchTab(targetId);
+                    e.preventDefault();
+                    // Безопасное получение target, даже если клик был по иконке внутри кнопки
+                    const targetId = link.getAttribute('data-target') || link.closest('.nav-link')?.getAttribute('data-target');
+                    if (targetId) switchTab(targetId);
                 });
             });
 
             // ==========================================
-            // ЛОГИКА ИЗОБРАЖЕНИЙ (Base64 Превью)
+            // ЛОГИКА ИЗОБРАЖЕНИЙ
             // ==========================================
             let base64Image = null;
             const imageInput = document.getElementById('task-image');
@@ -398,89 +427,129 @@
             const previewImg = document.getElementById('image-preview');
             const uploadUi = document.getElementById('image-upload-ui');
 
-            imageInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
+            if (imageInput) {
+                imageInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
 
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    base64Image = event.target.result; // Сохраняем строку для отправки в Supabase
-                    previewImg.src = base64Image;
-                    uploadUi.classList.add('hidden');
-                    previewContainer.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            });
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        base64Image = event.target.result;
+                        if (previewImg) previewImg.src = base64Image;
+                        if (uploadUi) uploadUi.classList.add('hidden');
+                        if (previewContainer) previewContainer.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
 
             // ==========================================
             // РАБОТА С БД (SUPABASE)
             // ==========================================
             async function loadTasks() {
                 const listContainer = document.getElementById('tasks-list');
-                const { data, error } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-                
-                if (error) {
-                    listContainer.innerHTML = `<p class="text-center text-red-500 font-mono text-sm py-4">Ошибка загрузки</p>`;
+                if (!listContainer) return;
+
+                if (!supabase) {
+                    listContainer.innerHTML = '<p class="text-center text-red-500 font-mono text-sm py-4">Ошибка: Supabase недоступен</p>';
                     return;
                 }
 
-                if (!data || data.length === 0) {
-                    listContainer.innerHTML = `<p class="text-center text-tg-hint font-mono text-sm py-4">Пока нет доступных заказов</p>`;
-                } else {
-                    listContainer.innerHTML = data.map(task => `
-                        <div class="flat-card p-5 rounded-2xl animate-item">
-                            ${task.image_url ? `<img src="${task.image_url}" class="w-full h-32 object-cover rounded-xl mb-4 border border-[var(--tg-theme-hint-color)] border-opacity-20" alt="task image">` : ''}
-                            <div class="flex justify-between items-start mb-3">
-                                <span class="bg-tg-secBg text-xs px-2 py-1 rounded-md font-mono text-tg-hint">TASK</span>
-                                <span class="font-mono font-medium text-lg price-tag" data-usd="${task.price}">${formatPrice(task.price)}</span>
-                            </div>
-                            <h3 class="text-lg font-medium leading-tight mb-2">${task.title}</h3>
-                            <p class="text-tg-hint text-sm line-clamp-3 leading-relaxed">${task.description || 'Без описания'}</p>
-                            <button class="mt-4 w-full border border-[var(--tg-theme-hint-color)] text-tg-text py-2 rounded-xl text-sm font-medium active:bg-tg-secBg transition-colors">Откликнуться</button>
-                        </div>
-                    `).join('');
-                }
+                listContainer.innerHTML = '<p class="text-center text-tg-hint font-mono text-sm py-4">Загрузка заказов...</p>';
 
-                document.querySelectorAll('.cat-count').forEach(label => label.innerText = `${data ? data.length : 0} заказов`);
+                try {
+                    const { data, error } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
+                    
+                    if (error) throw error;
+
+                    if (!data || data.length === 0) {
+                        listContainer.innerHTML = `<p class="text-center text-tg-hint font-mono text-sm py-4">Пока нет доступных заказов</p>`;
+                    } else {
+                        listContainer.innerHTML = data.map(task => `
+                            <div class="flat-card p-5 rounded-2xl animate-item">
+                                ${task.image_url ? `<img src="${task.image_url}" class="w-full h-32 object-cover rounded-xl mb-4 border border-[var(--tg-theme-hint-color)] border-opacity-20" alt="task image">` : ''}
+                                <div class="flex justify-between items-start mb-3">
+                                    <span class="bg-tg-secBg text-xs px-2 py-1 rounded-md font-mono text-tg-hint">TASK</span>
+                                    <span class="font-mono font-medium text-lg price-tag" data-usd="${task.price || 0}">${formatPrice(task.price || 0)}</span>
+                                </div>
+                                <h3 class="text-lg font-medium leading-tight mb-2">${task.title || 'Без названия'}</h3>
+                                <p class="text-tg-hint text-sm line-clamp-3 leading-relaxed">${task.description || 'Без описания'}</p>
+                                <button class="mt-4 w-full border border-[var(--tg-theme-hint-color)] text-tg-text py-2 rounded-xl text-sm font-medium active:bg-tg-secBg transition-colors">Откликнуться</button>
+                            </div>
+                        `).join('');
+                    }
+
+                    // Обновляем счетчики на главной странице
+                    document.querySelectorAll('.cat-count').forEach(label => label.innerText = `${data ? data.length : 0} заказов`);
+                } catch (err) {
+                    console.error("Ошибка загрузки:", err);
+                    listContainer.innerHTML = `<p class="text-center text-red-500 font-mono text-sm py-4">Не удалось загрузить данные.</p>`;
+                }
             }
 
-            document.getElementById('task-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const title = document.getElementById('task-title').value;
-                const desc = document.getElementById('task-desc').value;
-                const price = document.getElementById('task-price').value;
-                const user_id = tg.initDataUnsafe?.user?.id || 'test_user';
+            const taskForm = document.getElementById('task-form');
+            if (taskForm) {
+                taskForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (!supabase) return tg.showAlert?.('БД недоступна');
 
-                const { error } = await supabase.from('tasks').insert([
-                    { title: title, description: desc, price: price, creator_id: user_id, image_url: base64Image } // image_url сохраняет base64 
-                ]);
-                
-                if (error) {
-                    tg.showAlert('Ошибка: ' + error.message);
-                } else {
-                    tg.HapticFeedback.notificationOccurred('success');
-                    tg.showAlert('Заказ опубликован!');
-                    document.getElementById('task-form').reset();
-                    // Сброс картинки
-                    base64Image = null;
-                    previewContainer.classList.add('hidden');
-                    uploadUi.classList.remove('hidden');
-                    
-                    updateUI(); 
-                    switchTab('view-tasks');
-                }
-            });
+                    const title = document.getElementById('task-title')?.value || '';
+                    const desc = document.getElementById('task-desc')?.value || '';
+                    const price = document.getElementById('task-price')?.value || 0;
+                    const user_id = tg.initDataUnsafe?.user?.id || 'test_user';
+
+                    const submitBtn = document.getElementById('submit-task');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.5';
+                    }
+
+                    try {
+                        const { error } = await supabase.from('tasks').insert([
+                            { title: title, description: desc, price: price, creator_id: user_id, image_url: base64Image }
+                        ]);
+                        
+                        if (error) throw error;
+
+                        try { tg.HapticFeedback?.notificationOccurred?.('success'); } catch(e){}
+                        tg.showAlert?.('Заказ успешно опубликован!');
+                        
+                        taskForm.reset();
+                        base64Image = null;
+                        if (previewContainer) previewContainer.classList.add('hidden');
+                        if (uploadUi) uploadUi.classList.remove('hidden');
+                        
+                        updateUI(); 
+                        switchTab('view-tasks');
+                    } catch (err) {
+                        tg.showAlert?.('Ошибка: ' + err.message);
+                    } finally {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.style.opacity = '1';
+                        }
+                    }
+                });
+            }
 
             async function updateUI() {
                 const user = tg.initDataUnsafe?.user;
+                const userNameEl = document.getElementById('user-name');
+                const userTagEl = document.getElementById('user-tag');
+                
                 if (user) {
-                    document.getElementById('user-name').innerText = user.first_name || 'Без имени';
-                    document.getElementById('user-tag').innerText = '@' + (user.username || 'user');
+                    if (userNameEl) userNameEl.innerText = user.first_name || 'Без имени';
+                    if (userTagEl) userTagEl.innerText = '@' + (user.username || 'user');
                 }
-                const userId = user?.id;
-                if (userId) {
-                    const { count, error } = await supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('creator_id', userId);
-                    if (!error) document.getElementById('tasks-count').innerText = count || 0;
+
+                const userId = user?.id || 'test_user';
+                if (supabase) {
+                    try {
+                        const { count, error } = await supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('creator_id', userId);
+                        if (!error && document.getElementById('tasks-count')) {
+                            document.getElementById('tasks-count').innerText = count || 0;
+                        }
+                    } catch(e) { console.error(e); }
                 }
             }
 
@@ -488,35 +557,43 @@
             // ЛОГИКА МОДАЛЬНОГО ОКНА НАСТРОЕК
             // ==========================================
             const body = document.body;
-            document.getElementById('open-settings-btn').addEventListener('click', () => {
-                body.classList.add('modal-open');
-                tg.HapticFeedback.impactOccurred('light');
-            });
+            const openSettingsBtn = document.getElementById('open-settings-btn');
+            const settingsOverlay = document.getElementById('settings-overlay');
 
-            document.getElementById('settings-overlay').addEventListener('click', () => {
-                body.classList.remove('modal-open');
-            });
+            if (openSettingsBtn) {
+                openSettingsBtn.addEventListener('click', () => {
+                    body.classList.add('modal-open');
+                    try { tg.HapticFeedback?.impactOccurred?.('light'); } catch(e){}
+                });
+            }
 
-            // Обработка смены темы
-            document.getElementById('theme-select').addEventListener('change', (e) => {
-                currentTheme = e.target.value;
-                localStorage.setItem('app_theme', currentTheme);
-                applyTheme(currentTheme);
-                tg.HapticFeedback.selectionChanged();
-            });
+            if (settingsOverlay) {
+                settingsOverlay.addEventListener('click', () => {
+                    body.classList.remove('modal-open');
+                });
+            }
 
-            // Обработка смены валюты
-            document.getElementById('currency-select').addEventListener('change', (e) => {
-                currentCurrency = e.target.value;
-                localStorage.setItem('app_currency', currentCurrency);
-                updateAllPrices(); // Мгновенное обновление цен на всем сайте
-                tg.HapticFeedback.selectionChanged();
-            });
+            if (themeSelect) {
+                themeSelect.addEventListener('change', (e) => {
+                    currentTheme = e.target.value;
+                    localStorage.setItem('app_theme', currentTheme);
+                    applyTheme(currentTheme);
+                    try { tg.HapticFeedback?.selectionChanged?.(); } catch(e){}
+                });
+            }
 
-            // Запуск
+            if (currencySelect) {
+                currencySelect.addEventListener('change', (e) => {
+                    currentCurrency = e.target.value;
+                    localStorage.setItem('app_currency', currentCurrency);
+                    updateAllPrices();
+                    try { tg.HapticFeedback?.selectionChanged?.(); } catch(e){}
+                });
+            }
+
+            // Запускаем первичное обновление данных после привязки всех событий
             updateUI();
-            loadTasks();
-        })();
+        });
     </script>
 </body>
 </html>
