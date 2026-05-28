@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Биржа Заказов</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+
+    <div class="max-w-md mx-auto">
+        <header class="mb-6 text-center">
+            <h1 class="text-2xl font-bold text-gray-800">Доступные заказы</h1>
+        </header>
+
+        <div id="tasks-list" class="space-y-4">
+            <p class="text-center text-gray-500">Загрузка...</p>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация
+        const tg = window.Telegram.WebApp;
+        tg.expand(); 
+        
+        // Вставь сюда свои данные
+        const supabase = supabase.createClient('https://mjraxretmdniudrqhjrq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qcmF4cmV0bWRuaXVkcnFoanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTg5OTYsImV4cCI6MjA5NTU3NDk5Nn0.Y_Zu3ZDer2kbwuFrVWko2s1Dgyb7JSG377kWfLunWIk');
+
+        async function loadTasks() {
+            const listContainer = document.getElementById('tasks-list');
+            
+            const { data, error } = await supabase.from('tasks').select('*');
+            
+            if (error) {
+                listContainer.innerHTML = `<p class="text-red-500">Ошибка: ${error.message}</p>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                listContainer.innerHTML = '<p class="text-center text-gray-500">Заказов пока нет :(</p>';
+                return;
+            }
+
+            // Отрисовка списка
+            listContainer.innerHTML = data.map(task => `
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">${task.title}</h2>
+                    <p class="text-sm text-gray-600 mt-1">${task.description || 'Без описания'}</p>
+                    <div class="mt-3 flex justify-between items-center">
+                        <span class="text-green-600 font-bold">${task.price} руб.</span>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">Откликнуться</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>
