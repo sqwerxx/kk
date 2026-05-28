@@ -487,50 +487,83 @@
                 }
             }
 
-            const taskForm = document.getElementById('task-form');
-            if (taskForm) {
-                taskForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    if (!supabase) return tg.showAlert?.('БД недоступна');
+const taskForm = document.getElementById('task-form');
+if (taskForm) {
+    taskForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!supabase) return tg.showAlert?.('БД недоступна');
 
-                    const title = document.getElementById('task-title')?.value || '';
-                    const desc = document.getElementById('task-desc')?.value || '';
-                    const price = document.getElementById('task-price')?.value || 0;
-                    const user_id = tg.initDataUnsafe?.user?.id || 'test_user';
+        const title = document.getElementById('task-title')?.value || '';
+        const desc = document.getElementById('task-desc')?.value || '';
+        const price = document.getElementById('task-price')?.value || 0;
+        const user_id = tg.initDataUnsafe?.user?.id || 'test_user';
 
-                    const submitBtn = document.getElementById('submit-task');
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.style.opacity = '0.5';
-                    }
+        const submitBtn = document.getElementById('submit-task');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+        }
 
-                    try {
-                        const { error } = await supabase.from('tasks').insert([
-                            { title: title, description: desc, price: price, creator_id: user_id, image_url: base64Image }
-                        ]);
-                        
-                        if (error) throw error;
+        try {
+            let imageUrl = null;
 
-                        try { tg.HapticFeedback?.notificationOccurred?.('success'); } catch(e){}
-                        tg.showAlert?.('Заказ успешно опубликован!');
-                        
-                        taskForm.reset();
-                        base64Image = null;
-                        if (previewContainer) previewContainer.classList.add('hidden');
-                        if (uploadUi) uploadUi.classList.remove('hidden');
-                        
-                        updateUI(); 
-                        switchTab('view-tasks');
-                    } catch (err) {
-                        tg.showAlert?.('Ошибка: ' + err.message);
-                    } finally {
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                            submitBtn.style.opacity = '1';
-                        }
-                    }
-                });
+            // 1. Логика загрузки изображения в Storage
+            const fileInput = document.getElementById('task-image');
+            if (fileInput && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const fileExt = file.name.split('.').pop();
+                // Генерируем уникальное имя файла
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+                const filePath = `tasks/${fileName}`; // Путь внутри бакета
+
+                const { error: uploadError } = await supabase.storage
+                    .from('tasks-images') // ИМЯ ВАШЕГО БАКЕТА
+                    .upload(filePath, file);
+
+                if (uploadError) throw new Error('Ошибка загрузки фото: ' + uploadError.message);
+
+                // Получаем публичную ссылку
+                const { data } = supabase.storage
+                    .from('tasks-images')
+                    .getPublicUrl(filePath);
+                
+                imageUrl = data.publicUrl;
             }
+
+            // 2. Вставка данных в БД с полученной ссылкой
+            const { error } = await supabase.from('tasks').insert([
+                { 
+                    title: title, 
+                    description: desc, 
+                    price: price, 
+                    creator_id: user_id, 
+                    image_url: imageUrl // Сохраняем URL, а не base64
+                }
+            ]);
+            
+            if (error) throw error;
+
+            try { tg.HapticFeedback?.notificationOccurred?.('success'); } catch(e){}
+            tg.showAlert?.('Заказ успешно опубликован!');
+            
+            // Сброс формы и UI
+            taskForm.reset();
+            if (previewContainer) previewContainer.classList.add('hidden');
+            if (uploadUi) uploadUi.classList.remove('hidden');
+            
+            updateUI(); 
+            switchTab('view-tasks');
+            
+        } catch (err) {
+            tg.showAlert?.('Ошибка: ' + err.message);
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+            }
+        }
+    });
+}
 
             async function updateUI() {
                 const user = tg.initDataUnsafe?.user;
