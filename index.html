@@ -82,22 +82,30 @@
             background: var(--tg-theme-bg-color, #ffffff);
         }
 
-        @keyframes fadeUp {
-            0% { opacity: 0; transform: translateY(12px) scale(0.99); }
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(20px) scale(0.98); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .view-section { display: none; }
         .view-section.active { display: block; }
         
-        .view-section.active .animate-item {
-            animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        /* Плавные анимации появления */
+        .animate-item {
             opacity: 0;
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        .view-section.active .animate-item {
+            /* Перезапуск анимации при переключении */
+            animation: none;
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .delay-100 { animation-delay: 0.08s; }
-        .delay-150 { animation-delay: 0.12s; }
-        .delay-200 { animation-delay: 0.16s; }
+        .delay-50 { animation-delay: 0.05s; }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-150 { animation-delay: 0.15s; }
+        .delay-200 { animation-delay: 0.2s; }
         
         ::-webkit-scrollbar { width: 0px; height: 0px; background: transparent; }
         
@@ -105,19 +113,17 @@
             background: var(--tg-theme-bg-color, #ffffff);
             border: 1px solid rgba(142, 142, 147, 0.15);
             transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
-            z-index: 10;
+            overflow: hidden; /* Запрещаем элементам выпирать за края карточек */
         }
         .flat-card:active {
             transform: scale(0.98);
             border-color: var(--tg-theme-hint-color, #8e8e93);
-            z-index: 10;
         }
 
         /* Popover animation */
         #settings-popover {
             transform-origin: top right;
             transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
-            z-index: 100 !important;
         }
         #settings-popover.hidden {
             display: none;
@@ -148,8 +154,8 @@
     <!-- ГЛАВНАЯ СТРАНИЦА -->
     <main id="view-home" class="view-section active px-5">
         <header class="mb-6 animate-item">
-            <h1 class="text-3xl font-semibold tracking-tight" data-i18n="overview">Главная</h1>
-            <p class="text-tg-hint mt-1 text-sm font-mono">Добро пожаловать!</p>
+            <h1 class="text-3xl font-semibold tracking-tight" data-i18n="overview">Обзор</h1>
+            <p class="text-tg-hint mt-1 text-sm font-mono">welcome_back</p>
         </header>
 
         <div class="grid grid-cols-1 gap-4 mb-8 animate-item delay-100">
@@ -218,7 +224,7 @@
     <main id="view-create" class="view-section px-5">
         <header class="mb-8 animate-item">
             <h1 class="text-3xl font-semibold tracking-tight" data-i18n="new_request">Новая просьба</h1>
-            <p class="text-tg-hint mt-1 text-sm font-mono">Опишите вашу проблему</p>
+            <p class="text-tg-hint mt-1 text-sm font-mono">create_request</p>
         </header>
 
         <form id="task-form" class="space-y-5 animate-item delay-100">
@@ -284,16 +290,16 @@
             </button>
 
             <!-- ПЛАШКА НАСТРОЕК (Вместо BottomSheet) -->
-            <div id="settings-popover" class="hidden absolute right-0 top-11 bg-tg-bg border border-[var(--tg-theme-hint-color)] border-opacity-10 rounded-2xl p-4 shadow-xl z-50 w-64">
+            <div id="settings-popover" class="hidden absolute right-0 top-10 mt-1 bg-tg-bg border border-[var(--tg-theme-hint-color)] border-opacity-10 rounded-2xl p-4 shadow-xl z-50 w-64">
                 <h3 class="text-sm font-semibold mb-4 text-left" data-i18n="settings">Настройки</h3>
                 <div class="space-y-4 text-left">
                     <!-- Тема -->
                     <div>
                         <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-2 font-mono" data-i18n="theme">Оформление</label>
                         <div class="grid grid-cols-3 gap-1 bg-tg-secBg p-1 rounded-xl text-[11px] font-medium">
-                            <button type="button" data-theme-val="adaptive" class="theme-btn py-1.5 rounded-lg text-center transition-all bg-tg-bg shadow-sm text-tg-text">Адаптивная</button>
-                            <button type="button" data-theme-val="light" class="theme-btn py-1.5 rounded-lg text-center transition-all text-tg-hint">Светлая</button>
-                            <button type="button" data-theme-val="dark" class="theme-btn py-1.5 rounded-lg text-center transition-all text-tg-hint">Темная</button>
+                            <button type="button" data-theme-val="adaptive" class="theme-btn py-1.5 rounded-lg text-center transition-all bg-tg-bg shadow-sm text-tg-text">Авто</button>
+                            <button type="button" data-theme-val="light" class="theme-btn py-1.5 rounded-lg text-center transition-all text-tg-hint">Свет</button>
+                            <button type="button" data-theme-val="dark" class="theme-btn py-1.5 rounded-lg text-center transition-all text-tg-hint">Темн</button>
                         </div>
                     </div>
                     <!-- Валюта -->
@@ -336,7 +342,7 @@
                 </div>
                 
                 <div id="bio-display-wrapper">
-                    <p id="user-bio" class="text-sm leading-relaxed">Описнаие</p>
+                    <p id="user-bio" class="text-sm leading-relaxed">Делаю интерфейсы, от которых люди плачут от счастья. Опыт 5 лет, люблю флэт-минимализм и типографику.</p>
                 </div>
                 
                 <div id="bio-edit-wrapper" class="hidden space-y-3">
@@ -427,7 +433,7 @@
             // ==========================================
             const i18n = {
                 ru: {
-                    overview: "Главная",
+                    overview: "Обзор",
                     tasks_board: "Заказов на бирже",
                     find_requests: "Найди работу по душе",
                     tasks: "Заказы",
@@ -613,7 +619,7 @@
             // ==========================================
             const platformNews = [
                 {
-                    id: 2,
+                    id: 1,
                     title: "Запуск версии 2.0.0",
                     short: "Грандиозный редизайн, живые валюты и фильтры категорий.",
                     full: "Мы полностью переписали и модернизировали дизайн биржи kk!<br><br><b>Что нового:</b><br>• Выпадающие Popover настройки вместо громоздких штор.<br>• Смарт-хедер с постоянным балансом.<br>• Загрузка реальных курсов валют из центральных API.<br>• Фото в заказах теперь сжимается и загружается бесшовно.<br>• Интуитивное редактирование личного профиля.",
@@ -621,34 +627,26 @@
                     time: "11:00"
                 },
                 {
-                    id: 3,
+                    id: 2,
                     title: "Telegram Stars уже здесь!",
                     short: "Оплачивайте фриланс напрямую внутренней валютой мессенджера.",
                     full: "Проводить сделки стало ещё проще.<br><br>В разделе валют теперь можно переключиться на Telegram Stars (⭐). Приложение автоматически конвертирует всю стоимость заказов на основе официального соотношения $ к Stars.",
                     date: "28.05.2026",
                     time: "18:30"
-                },
-                {
-                    id: 1,
-                    title: "Я долбаеб",
-                    short: "жопа жопа жопа хахахаха.",
-                    full: "Сто доооллларов хахаха<br><br><b>Что нового:</b><br>• нихуя♥",
-                    date: "29.05.2026",
-                    time: "16:00"
                 }
             ];
 
             function renderNews() {
                 const container = document.getElementById('news-container');
                 if (!container) return;
-                container.innerHTML = platformNews.map(item => `
-                    <div class="flat-card p-5 rounded-2xl cursor-pointer active:scale-[0.99] transition-transform news-card" data-news-id="${item.id}">
+                container.innerHTML = platformNews.map((item, index) => `
+                    <div class="flat-card p-5 rounded-2xl cursor-pointer active:scale-[0.99] transition-transform news-card animate-item" style="animation-delay: ${index * 0.1 + 0.2}s" data-news-id="${item.id}">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-tg-hint text-xs font-mono">${item.date} • ${item.time}</span>
                             <span class="bg-tg-secBg text-xs font-semibold px-2 py-0.5 rounded-md text-tg-hint">NEWS</span>
                         </div>
-                        <h3 class="text-base font-semibold tracking-tight mb-1">${item.title}</h3>
-                        <p class="text-tg-hint text-xs leading-relaxed line-clamp-2">${item.short}</p>
+                        <h3 class="text-base font-semibold tracking-tight mb-1 break-words">${item.title}</h3>
+                        <p class="text-tg-hint text-xs leading-relaxed line-clamp-2 break-words">${item.short}</p>
                     </div>
                 `).join('');
 
@@ -784,28 +782,69 @@
                 });
 
                 if (filtered.length === 0) {
-                    listContainer.innerHTML = `<p class="text-center text-tg-hint font-mono text-sm py-8">Ничего не найдено</p>`;
+                    listContainer.innerHTML = `<p class="text-center text-tg-hint font-mono text-sm py-8 animate-item">Ничего не найдено</p>`;
                     return;
                 }
 
-                listContainer.innerHTML = filtered.map(task => {
+                listContainer.innerHTML = filtered.map((task, index) => {
                     const catName = i18n[currentLang][task.category] || task.category || 'TASK';
+                    
+                    // Подготовка данных об авторе
+                    const authorUsername = task.creator_username || 'unknown';
+                    const authorAvatar = task.creator_avatar ? 
+                        `<img src="${task.creator_avatar}" class="w-9 h-9 rounded-full object-cover shadow-sm">` : 
+                        `<div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-sm">${authorUsername.substring(0,1).toUpperCase()}</div>`;
+                    
+                    const safeTitle = task.title ? task.title.replace(/'/g, "\\'").replace(/"/g, '&quot;') : 'Без названия';
+
                     return `
-                        <div class="flat-card p-5 rounded-2xl animate-item">
-                            ${task.image_url ? `<img src="${task.image_url}" class="w-full h-32 object-cover rounded-xl mb-4 border border-[var(--tg-theme-hint-color)] border-opacity-20">` : ''}
-                            <div class="flex justify-between items-start mb-3">
-                                <span class="bg-tg-secBg text-[10px] px-2 py-1 rounded-md font-mono text-tg-hint uppercase tracking-wider">${catName}</span>
-                                <span class="font-mono font-medium text-lg price-tag" data-usd="${task.price || 0}">${formatPrice(task.price || 0)}</span>
+                        <div class="flat-card p-5 rounded-2xl animate-item" style="animation-delay: ${index * 0.1 + 0.1}s">
+                            <!-- Блок автора -->
+                            <div class="flex items-center gap-3 mb-4 pb-4 border-b border-[var(--tg-theme-hint-color)] border-opacity-10">
+                                ${authorAvatar}
+                                <div class="flex flex-col overflow-hidden">
+                                    <span class="text-[10px] text-tg-hint font-mono uppercase tracking-widest leading-none mb-1">Заказчик</span>
+                                    <span class="text-sm font-medium leading-none truncate w-full">@${authorUsername}</span>
+                                </div>
                             </div>
-                            <h3 class="text-lg font-medium leading-tight mb-2">${task.title || 'Без названия'}</h3>
-                            <p class="text-tg-hint text-sm line-clamp-3 leading-relaxed">${task.description || 'Без описания'}</p>
-                            <button class="mt-4 w-full border border-[var(--tg-theme-hint-color)] text-tg-text py-2.5 rounded-xl text-sm font-medium active:bg-tg-secBg transition-colors">Откликнуться</button>
+
+                            ${task.image_url ? `<img src="${task.image_url}" class="w-full h-32 object-cover rounded-xl mb-4 border border-[var(--tg-theme-hint-color)] border-opacity-20">` : ''}
+                            
+                            <div class="flex justify-between items-start mb-3 gap-2">
+                                <span class="bg-tg-secBg text-[10px] px-2 py-1 rounded-md font-mono text-tg-hint uppercase tracking-wider shrink-0">${catName}</span>
+                                <span class="font-mono font-medium text-lg price-tag break-words text-right" data-usd="${task.price || 0}">${formatPrice(task.price || 0)}</span>
+                            </div>
+                            
+                            <h3 class="text-lg font-medium leading-tight mb-2 break-words">${task.title || 'Без названия'}</h3>
+                            <p class="text-tg-hint text-sm line-clamp-3 leading-relaxed break-words mb-4">${task.description || 'Без описания'}</p>
+                            
+                            <button onclick="respondToTask('${authorUsername}', '${safeTitle}')" class="w-full bg-tg-btn text-tg-btnText py-3 rounded-xl text-sm font-medium active:scale-[0.98] transition-transform flex justify-center items-center gap-2">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path></svg>
+                                Откликнуться
+                            </button>
                         </div>
                     `;
                 }).join('');
                 
                 updateAllPrices();
             }
+
+            // Глобальная функция отклика (переход в диалог Telegram)
+            window.respondToTask = function(username, title) {
+                if (!username || username === 'unknown' || username === 'undefined') {
+                    tg.showAlert?.('К сожалению, автор не указал свой юзернейм в настройках Telegram.');
+                    return;
+                }
+                const cleanUsername = username.replace('@', '');
+                const message = `Добрый день. Я по поводу вашей просьбы "${title}". Думаю, я смогу вам помочь.`;
+                const url = `https://t.me/${cleanUsername}?text=${encodeURIComponent(message)}`;
+                
+                if (tg && tg.openTelegramLink) {
+                    tg.openTelegramLink(url);
+                } else {
+                    window.open(url, '_blank');
+                }
+            };
 
             // Фильтры при вводе
             document.getElementById('search-input').addEventListener('input', renderFilteredTasks);
@@ -837,13 +876,27 @@
                     const cat = document.getElementById('task-category')?.value || 'other';
                     const user_id = tg.initDataUnsafe?.user?.id || 'test_user';
 
+                    // Получаем юзернейм и аватарку создателя из Telegram Web App для сохранения
+                    const tgUser = tg.initDataUnsafe?.user;
+                    const creator_username = tgUser?.username || 'unknown';
+                    const creator_avatar = tgUser?.photo_url || '';
+
                     const submitBtn = document.getElementById('submit-task');
                     submitBtn.disabled = true;
                     submitBtn.style.opacity = '0.5';
 
                     try {
                         const { error } = await supabase.from('tasks').insert([
-                            { title, description: desc, price, creator_id: user_id, category: cat, image_url: base64Image }
+                            { 
+                                title, 
+                                description: desc, 
+                                price, 
+                                creator_id: user_id, 
+                                category: cat, 
+                                image_url: base64Image,
+                                creator_username: creator_username, // Сохраняем username автора
+                                creator_avatar: creator_avatar      // Сохраняем аватарку автора
+                            }
                         ]);
                         
                         if (error) throw error;
