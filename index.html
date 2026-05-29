@@ -156,11 +156,11 @@
         <div class="grid grid-cols-2 gap-4 mb-8 animate-item delay-100">
             <div class="flat-card p-5 rounded-2xl flex flex-col justify-between h-[110px]">
                 <p class="text-tg-hint text-[10px] uppercase tracking-widest font-mono" data-i18n="tasks_board">Заказов на бирже</p>
-                <p id="tasks-count" class="text-3xl font-bold font-mono">...</p>
+                <p id="tasks-count" class="text-3xl font-bold font-mono"></p>
             </div>
             <div class="flat-card p-5 rounded-2xl flex flex-col justify-between h-[110px]">
                 <p class="text-tg-hint text-[10px] uppercase tracking-widest font-mono">Юзеров на бирже</p>
-                <p id="users-count" class="text-3xl font-bold font-mono">...</p>
+                <p id="users-count" class="text-3xl font-bold font-mono"></p>
             </div>
         </div>
 
@@ -540,8 +540,8 @@
             const platformNews = [
                 {
                     id: 2, title: "Запуск версии 2.0.0", short: "Улучшен дизайн, исправлены наложения и добавлены новые фильтры.",
-                    full: "Мы полностью переписали и модернизировали дизайн биржи kk!<br><br><b>Что нового:</b><br>• Просторные отступы сверху и нативный баланс в шапке.<br>• Фотографии в новостях и заказах отображаются без сжатий.<br>• Анимация открытия настроек прямо из трех точек стала плавной.<br>• Кнопка в панели навигации центрирована абсолютно идеально.",
-                    date: "29.05.2026", time: "11:00",
+                    full: "Мы полностью переписали и модернизировали дизайн биржи kk!<br><br><b>Что нового:</b><br>• Просторные отступы сверху и нативный баланс в шапке.<br>• Исправлен баг с анимацией открытия настроек.",
+                    date: "29.05.2026", time: "17:06",
                     image_url: "photo_2026-05-29_16-51-46.jpg" 
                 },
                 {
@@ -799,8 +799,11 @@
                         const { count: tasksCount } = await supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('creator_id', user?.id || 'test');
                         if (document.getElementById('tasks-count')) document.getElementById('tasks-count').innerText = tasksCount || 0;
 
-                        const { count: usersCount } = await supabase.from('tasks').select('creator_id', { count: 'exact', head: true });
-                        if (document.getElementById('users-count')) document.getElementById('users-count').innerText = (usersCount ? Math.max(usersCount + 3, 42) : 14);
+                        const { data: tasksData } = await supabase.from('tasks').select('creator_id');
+                        if (document.getElementById('users-count')) {
+                            const uniqueUsers = tasksData ? new Set(tasksData.map(t => t.creator_id)).size : 0;
+                            document.getElementById('users-count').innerText = uniqueUsers;
+                        }
                     } catch(e) {}
                 }
             }
