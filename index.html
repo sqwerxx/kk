@@ -105,10 +105,12 @@
             background: var(--tg-theme-bg-color, #ffffff);
             border: 1px solid rgba(142, 142, 147, 0.15);
             transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+            z-index: 10;
         }
         .flat-card:active {
             transform: scale(0.98);
             border-color: var(--tg-theme-hint-color, #8e8e93);
+            z-index: 10;
         }
 
         /* Popover animation */
