@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>kk Freelance</title>
+    <title>kk</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -703,7 +703,7 @@
                     const catName = i18n[currentLang][task.category] || task.category || 'TASK';
                     const creatorUsername = task.creator_username || 'freelancer';
                     const creatorAvatarUrl = task.creator_avatar;
-                    const applyMessage = encodeURIComponent(`Добрый день. Я по поводу вашей просьбы "${task.title}". Думаю, я смогу вам помочь.`);
+                    const applyMessage = encodeURIComponent(`Добрый день. Пишу по поводу вашей просьбы "${task.title}". Думаю, я смогу вам помочь. <br>Вы выставили цену предложения ${task.price}. <br>Она актуальна? <br>Есть ли возможность торга?`);
 
                     return `
                         <div class="flat-card p-5 rounded-2xl animate-item">
