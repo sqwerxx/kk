@@ -194,7 +194,7 @@
                 <button class="category-pill bg-tg-secBg text-tg-hint px-4 h-10 flex items-center justify-center rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all shrink-0" data-category="dev" data-i18n="programming">Программирование</button>
                 <button class="category-pill bg-tg-secBg text-tg-hint px-4 h-10 flex items-center justify-center rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all shrink-0" data-category="design" data-i18n="design">Дизайн</button>
                 <button class="category-pill bg-tg-secBg text-tg-hint px-4 h-10 flex items-center justify-center rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all shrink-0" data-category="video" data-i18n="editing">Видеомонтаж</button>
-                <button class="category-pill bg-tg-secBg text-tg-hint px-4 h-10 flex items-center justify-center rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all shrink-0" data-category="translation" data-i18n="translation">Перевод</button>
+                <button class="category-pill bg-tg-secBg text-tg-hint px-4 h-10 flex items-center justify-center rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all shrink-0" data-category="translation" data-i18n="translation">Тексты</button>
                 <button class="category-pill bg-tg-secBg text-tg-hint px-4 h-10 flex items-center justify-center rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all shrink-0" data-category="other" data-i18n="other">Другое</button>
             </div>
 
@@ -228,7 +228,7 @@
                     <option value="dev" data-i18n="programming">Программирование</option>
                     <option value="design" data-i18n="design">Дизайн</option>
                     <option value="video" data-i18n="editing">Видеомонтаж</option>
-                    <option value="translation" data-i18n="translation">Перевод</option>
+                    <option value="translation" data-i18n="translation">Тексты</option>
                     <option value="other" data-i18n="other">Другое</option>
                 </select>
             </div>
@@ -427,7 +427,7 @@
                     topup: "Пополнить", topup_title: "Пополнение баланса", card_number: "Номер карты",
                     expiry: "Срок", placeholder_desc: "Опишите задачу максимально подробно...", loading: "Загрузка...",
                     programming: "Программирование", design: "Дизайн и UI", editing: "Видеомонтаж",
-                    translation: "Перевод", other: "Другое", category: "Категория", budget: "Бюджет",
+                    translation: "Тексты", other: "Другое", category: "Категория", budget: "Бюджет",
                     news_title: "Новости платформы", all_categories: "Все", title: "Заголовок",
                     description: "Описание задачи", photo: "Фото проблемы (опционально)", theme: "Оформление",
                     currency: "Отображение цен", language: "Язык", profile: "Профиль", keywords: "Поиск по ключевым словам..."
@@ -539,14 +539,14 @@
             // ==========================================
             const platformNews = [
                 {
-                    id: 2, title: "Запуск версии 2.0.0", short: "Улучшен дизайн, исправлены наложения и добавлены новые фильтры.",
-                    full: "Мы полностью переписали и модернизировали дизайн биржи kk!<br><br><b>Что нового:</b><br>• Просторные отступы сверху и нативный баланс в шапке.<br>• Исправлен баг с анимацией открытия настроек.",
+                    id: 2, title: "Запуск версии Beta 1.0", short: "Создан красивый дизайн и понятный интерфейс, исправлены наложения и добавлены фильтры поиска.",
+                    full: "Рады приветствовать вас на новой фриланс-бирже, работающей внутри telegram - kk!<br><br><b>Что нового:</b><br>• Актуальное обновление валют ежесекундно. Не стоит искать курс доллара или тенге в браузере - теперь всё автоматичсески подстраивается под пользователя внутри приложения. Просто выберите желаемую валюту в настройках профиля.<br>• Запуск первой бета-версии биржи.<br>• Добавлен перечень фильтров и категорий внутри поиска заказов. Были добавлены следующие категории: Программирование, Дизайн и UI, Видеомонтаж, Тексты, Другое. В будущем этот список будет дополняться.",
                     date: "29.05.2026", time: "17:06",
                     image_url: "photo_2026-05-29_16-51-46.jpg" 
                 },
                 {
                     id: 3, title: "Бесшовный отклик в Telegram", short: "Теперь откликаться на проекты можно мгновенно прямо в мессенджер.",
-                    full: "Интеграция с Telegram вышла на совершенно новый уровень!<br><br>При нажатии кнопки «Откликнуться» приложение автоматически сформирует идеальное персонализированное сообщение и перенаправит вас в чат к заказчику.",
+                    full: "Интеграция с Telegram вышла на совершенно новый уровень.<br><br>При нажатии кнопки «Откликнуться» приложение автоматически сформирует идеальное персонализированное сообщение и перенаправит вас в чат к заказчику.",
                     date: "28.05.2026", time: "18:30"
                 }
             ];
@@ -703,7 +703,7 @@
                     const catName = i18n[currentLang][task.category] || task.category || 'TASK';
                     const creatorUsername = task.creator_username || 'freelancer';
                     const creatorAvatarUrl = task.creator_avatar;
-                    const applyMessage = encodeURIComponent(`Добрый день. Пишу по поводу вашей просьбы "${task.title}". Думаю, я смогу вам помочь. <br>Вы выставили цену предложения ${task.price}. <br>Она актуальна? <br>Есть ли возможность торга?`);
+                    const applyMessage = encodeURIComponent(`Добрый день. Пишу по поводу вашей просьбы "${task.title}". Думаю, я смогу вам помочь. Вы выставили цену предложения ${task.price}$. Верно ли указана стоимость и курс валюты? Есть ли возможность торга? Давайте обсудим вашу проблему подробнее.`);
 
                     return `
                         <div class="flat-card p-5 rounded-2xl animate-item">
