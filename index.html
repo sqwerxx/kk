@@ -38,7 +38,7 @@
     </script>
 
     <style>
-        /* Принудительные темы (переопределяют переменные TG) */
+        /* Принудительные темы */
         body[data-theme="light"] {
             --tg-theme-bg-color: #ffffff;
             --tg-theme-text-color: #000000;
@@ -49,13 +49,13 @@
             --tg-theme-secondary-bg-color: #f2f2f7;
         }
         body[data-theme="dark"] {
-            --tg-theme-bg-color: #1c1c1e;
-            --tg-theme-text-color: #ffffff;
-            --tg-theme-hint-color: #98989d;
-            --tg-theme-link-color: #0a84ff;
+            --tg-theme-bg-color: #121214;
+            --tg-theme-text-color: #f5f5f7;
+            --tg-theme-hint-color: #8e8e93;
+            --tg-theme-link-color: #2f80ed;
             --tg-theme-button-color: #ffffff;
-            --tg-theme-button-text-color: #000000;
-            --tg-theme-secondary-bg-color: #2c2c2e;
+            --tg-theme-button-text-color: #121214;
+            --tg-theme-secondary-bg-color: #1a1a1e;
         }
 
         body {
@@ -63,7 +63,8 @@
             color: var(--tg-theme-text-color, #000000);
             -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
-            padding-bottom: 100px;
+            padding-bottom: 110px;
+            padding-top: 76px;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
@@ -72,7 +73,7 @@
             background: var(--tg-theme-secondary-bg-color, #f2f2f7);
             color: var(--tg-theme-text-color, #000000);
             border: 1px solid transparent;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
         
         input:focus, textarea:focus, select:focus {
@@ -82,7 +83,7 @@
         }
 
         @keyframes fadeUp {
-            0% { opacity: 0; transform: translateY(16px) scale(0.98); }
+            0% { opacity: 0; transform: translateY(12px) scale(0.99); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
@@ -90,101 +91,158 @@
         .view-section.active { display: block; }
         
         .view-section.active .animate-item {
-            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
         }
 
-        .delay-100 { animation-delay: 0.1s; }
-        .delay-150 { animation-delay: 0.15s; }
-        .delay-200 { animation-delay: 0.2s; }
+        .delay-100 { animation-delay: 0.08s; }
+        .delay-150 { animation-delay: 0.12s; }
+        .delay-200 { animation-delay: 0.16s; }
         
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        ::-webkit-scrollbar { width: 0px; height: 0px; background: transparent; }
         
         .flat-card {
             background: var(--tg-theme-bg-color, #ffffff);
-            border: 1px solid rgba(142, 142, 147, 0.2);
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            border: 1px solid rgba(142, 142, 147, 0.15);
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .flat-card:active {
             transform: scale(0.98);
             border-color: var(--tg-theme-hint-color, #8e8e93);
         }
 
-        /* Анимация модального окна настроек */
-        #settings-modal { transition: opacity 0.3s ease; }
-        #settings-sheet { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .modal-open #settings-modal { opacity: 1; pointer-events: auto; }
-        .modal-open #settings-sheet { transform: translateY(0); }
+        /* Popover animation */
+        #settings-popover {
+            transform-origin: top right;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+        }
+        #settings-popover.hidden {
+            display: none;
+            opacity: 0;
+            transform: scale(0.95) translateY(-8px);
+        }
+
+        /* Category pills scroll container styling */
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 <body class="font-sans antialiased text-tg-text" data-theme="adaptive">
 
+    <!-- ФИКСИРОВАННЫЙ СМАРТ-ХЕДЕР (Глобальный Баланс) -->
+    <header class="fixed top-0 left-0 w-full bg-tg-bg/85 backdrop-blur-md z-40 px-5 py-4 flex justify-between items-center border-b border-[var(--tg-theme-hint-color)] border-opacity-10">
+        <h1 class="text-xl font-bold tracking-tight font-mono cursor-pointer nav-link" data-target="view-home">kk</h1>
+        <div class="flex items-center gap-2">
+            <span id="global-balance" class="font-mono font-semibold text-xs tracking-wider bg-tg-secBg px-3 py-1.5 rounded-full price-tag" data-usd="120.00">$120.00</span>
+            <button id="global-topup-btn" class="bg-tg-btn text-tg-btnText text-xs font-semibold px-3 py-1.5 rounded-full active:scale-95 transition-transform flex items-center justify-center gap-1">
+                <span data-i18n="topup">Пополнить</span>
+            </button>
+        </div>
+    </header>
+
     <!-- ГЛАВНАЯ СТРАНИЦА -->
-    <main id="view-home" class="view-section active px-5 pt-8">
-        <header class="mb-8 animate-item">
-            <h1 class="text-3xl font-semibold tracking-tight">kk</h1>
-            <p class="text-tg-hint mt-1 text-sm font-mono">Фриланс биржа</p>
+    <main id="view-home" class="view-section active px-5">
+        <header class="mb-6 animate-item">
+            <h1 class="text-3xl font-semibold tracking-tight" data-i18n="overview">Обзор</h1>
+            <p class="text-tg-hint mt-1 text-sm font-mono">welcome_back</p>
         </header>
 
-        <div class="grid grid-cols-2 gap-4 mb-8 animate-item delay-100">
-            <div class="flat-card p-5 rounded-2xl">
-                <p class="text-tg-hint text-xs uppercase tracking-widest mb-2 font-mono">Баланс</p>
-                <p id="user-balance" class="text-2xl font-medium font-mono price-tag" data-usd="0">0</p>
-            </div>
-            <div class="flat-card p-5 rounded-2xl">
-                <p class="text-tg-hint text-xs uppercase tracking-widest mb-2 font-mono">Заказов на бирже</p>
-                <p id="tasks-count" class="text-2xl font-medium font-mono">0</p>
+        <div class="grid grid-cols-1 gap-4 mb-8 animate-item delay-100">
+            <div class="flat-card p-5 rounded-2xl flex justify-between items-center">
+                <div>
+                    <p class="text-tg-hint text-xs uppercase tracking-widest mb-1 font-mono" data-i18n="tasks_board">Заказов на бирже</p>
+                    <p id="tasks-count" class="text-2xl font-semibold font-mono">0</p>
+                </div>
+                <div class="p-3 bg-tg-secBg rounded-xl">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
             </div>
         </div>
 
-        <h2 class="text-lg font-medium mb-4 animate-item delay-150">Популярные категории</h2>
-        <div class="space-y-3 animate-item delay-200">
-            <div class="flat-card p-4 rounded-xl flex justify-between items-center cursor-pointer nav-link" data-target="view-tasks">
-                <span class="font-medium">Программирование</span>
-                <span class="cat-count text-tg-hint font-mono text-sm">... заказов</span>
-            </div>
-            <div class="flat-card p-4 rounded-xl flex justify-between items-center cursor-pointer nav-link" data-target="view-tasks">
-                <span class="font-medium">Дизайн и UI</span>
-                <span class="cat-count text-tg-hint font-mono text-sm">... заказов</span>
-            </div>
+        <!-- РАЗДЕЛ НОВОСТЕЙ -->
+        <div class="mb-4 flex justify-between items-center animate-item delay-150">
+            <h2 class="text-lg font-medium tracking-tight" data-i18n="news_title">Новости платформы</h2>
+        </div>
+        
+        <div id="news-container" class="space-y-4 animate-item delay-200">
+            <!-- Новости генерируются из JS шаблона -->
         </div>
     </main>
 
-    <!-- СТРАНИЦА ЗАКАЗОВ -->
-    <main id="view-tasks" class="view-section px-5 pt-8">
-        <header class="mb-6 animate-item flex justify-between items-end">
+    <!-- СТРАНИЦА ЗАКАЗОВ (ПОИСК) -->
+    <main id="view-tasks" class="view-section px-5">
+        <header class="mb-5 animate-item flex justify-between items-end">
             <div>
-                <h1 class="text-3xl font-semibold tracking-tight">Заказы</h1>
-                <p class="text-tg-hint mt-1 text-sm font-mono">Найди работу по душе</p>
+                <h1 class="text-3xl font-semibold tracking-tight" data-i18n="tasks">Заказы</h1>
+                <p class="text-tg-hint mt-1 text-sm font-mono" data-i18n="find_requests">Найди работу по душе</p>
             </div>
         </header>
 
+        <!-- ПОИСК И ФИЛЬТРЫ -->
+        <div class="space-y-4 mb-6 animate-item delay-100">
+            <div class="relative">
+                <input type="text" id="search-input" data-i18n-placeholder="keywords" placeholder="Поиск по ключевым словам..." class="w-full p-4 pr-12 rounded-2xl text-sm">
+                <div class="absolute right-4 top-1/2 -translate-y-1/2 text-tg-hint">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+
+            <!-- Горизонтальная прокрутка категорий -->
+            <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
+                <button class="category-pill bg-tg-btn text-tg-btnText px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all" data-category="all" data-i18n="all_categories">Все</button>
+                <button class="category-pill bg-tg-secBg text-tg-hint px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all" data-category="dev" data-i18n="programming">Программирование</button>
+                <button class="category-pill bg-tg-secBg text-tg-hint px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all" data-category="design" data-i18n="design">Дизайн</button>
+                <button class="category-pill bg-tg-secBg text-tg-hint px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all" data-category="video" data-i18n="editing">Видеомонтаж</button>
+                <button class="category-pill bg-tg-secBg text-tg-hint px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all" data-category="translation" data-i18n="translation">Перевод</button>
+                <button class="category-pill bg-tg-secBg text-tg-hint px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all" data-category="other" data-i18n="other">Другое</button>
+            </div>
+
+            <!-- Интервал цен -->
+            <div class="flex gap-3">
+                <input type="number" id="filter-price-min" placeholder="Min $" class="w-1/2 p-3 rounded-xl text-sm font-mono">
+                <input type="number" id="filter-price-max" placeholder="Max $" class="w-1/2 p-3 rounded-xl text-sm font-mono">
+            </div>
+        </div>
+
         <div id="tasks-list" class="space-y-4 pb-4 animate-item delay-150">
-            <p class="text-center text-tg-hint font-mono text-sm py-4">Загрузка заказов...</p>
+            <p class="text-center text-tg-hint font-mono text-sm py-4" data-i18n="loading">Загрузка заказов...</p>
         </div>
     </main>
 
     <!-- СОЗДАНИЕ ЗАКАЗА -->
-    <main id="view-create" class="view-section px-5 pt-8">
+    <main id="view-create" class="view-section px-5">
         <header class="mb-8 animate-item">
-            <h1 class="text-3xl font-semibold tracking-tight">Новая просьба</h1>
-            <p class="text-tg-hint mt-1 text-sm font-mono">Что-то случилось?</p>
+            <h1 class="text-3xl font-semibold tracking-tight" data-i18n="new_request">Новая просьба</h1>
+            <p class="text-tg-hint mt-1 text-sm font-mono">create_request</p>
         </header>
 
         <form id="task-form" class="space-y-5 animate-item delay-100">
             <div>
-                <label class="block text-xs uppercase tracking-widest text-tg-hint mb-2 font-mono">Заголовок</label>
+                <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-2 font-mono" data-i18n="title">Заголовок</label>
                 <input type="text" id="task-title" placeholder="Например: Сверстать лендинг" class="w-full p-4 rounded-2xl text-base" required>
+            </div>
+
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-2 font-mono" data-i18n="category">Категория</label>
+                <select id="task-category" class="w-full p-4 rounded-2xl text-base bg-tg-secBg font-medium">
+                    <option value="dev" data-i18n="programming">Программирование</option>
+                    <option value="design" data-i18n="design">Дизайн</option>
+                    <option value="video" data-i18n="editing">Видеомонтаж</option>
+                    <option value="translation" data-i18n="translation">Перевод</option>
+                    <option value="other" data-i18n="other">Другое</option>
+                </select>
             </div>
             
             <div>
-                <label class="block text-xs uppercase tracking-widest text-tg-hint mb-2 font-mono">Описание задачи</label>
-                <textarea id="task-desc" rows="4" placeholder="Опишите задачу максимально подробно..." class="w-full p-4 rounded-2xl text-base resize-none" required></textarea>
+                <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-2 font-mono" data-i18n="description">Описание задачи</label>
+                <textarea id="task-desc" rows="4" data-i18n-placeholder="placeholder_desc" placeholder="Опишите задачу максимально подробно..." class="w-full p-4 rounded-2xl text-base resize-none" required></textarea>
             </div>
 
             <!-- Загрузка фото -->
             <div>
-                <label class="block text-xs uppercase tracking-widest text-tg-hint mb-2 font-mono">Фото проблемы (опционально)</label>
+                <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-2 font-mono" data-i18n="photo">Фото проблемы (опционально)</label>
                 <div class="relative w-full border border-dashed border-[var(--tg-theme-hint-color)] border-opacity-30 rounded-2xl bg-tg-secBg overflow-hidden transition-all hover:bg-opacity-80">
                     <input type="file" id="task-image" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                     
@@ -203,80 +261,138 @@
             </div>
 
             <div>
-                <label class="block text-xs uppercase tracking-widest text-tg-hint mb-2 font-mono">Бюджет ($)</label>
+                <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-2 font-mono" data-i18n="budget">Бюджет ($)</label>
                 <input type="number" id="task-price" placeholder="0.00" class="w-full p-4 rounded-2xl text-xl font-mono" required>
             </div>
 
             <button type="submit" id="submit-task" class="w-full bg-tg-btn text-tg-btnText py-4 rounded-2xl font-medium text-lg mt-4 active:opacity-70 transition-opacity flex justify-center items-center gap-2">
-                <span>Опубликовать заказ</span>
+                <span data-i18n="publish">Опубликовать заказ</span>
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
             </button>
         </form>
     </main>
 
     <!-- ПРОФИЛЬ -->
-    <main id="view-profile" class="view-section px-5 pt-8">
+    <main id="view-profile" class="view-section px-5">
         <header class="mb-8 animate-item relative text-center">
             <!-- Кнопка настроек (Три точки) -->
-            <button id="open-settings-btn" class="absolute right-0 top-0 p-2 text-tg-text active:opacity-50">
+            <button id="open-settings-btn" class="absolute right-0 top-0 p-2 text-tg-text active:opacity-50 z-10">
                 <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"></path></svg>
             </button>
 
-            <div class="w-24 h-24 bg-tg-secBg rounded-full mx-auto mb-4 flex items-center justify-center text-3xl">😎</div>
+            <!-- ПЛАШКА НАСТРОЕК (Вместо BottomSheet) -->
+            <div id="settings-popover" class="hidden absolute right-0 top-11 bg-tg-bg border border-[var(--tg-theme-hint-color)] border-opacity-10 rounded-2xl p-4 shadow-xl z-50 w-64">
+                <h3 class="text-sm font-semibold mb-4 text-left" data-i18n="settings">Настройки</h3>
+                <div class="space-y-4 text-left">
+                    <!-- Тема -->
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-2 font-mono" data-i18n="theme">Оформление</label>
+                        <div class="grid grid-cols-3 gap-1 bg-tg-secBg p-1 rounded-xl text-[11px] font-medium">
+                            <button type="button" data-theme-val="adaptive" class="theme-btn py-1.5 rounded-lg text-center transition-all bg-tg-bg shadow-sm text-tg-text">Авто</button>
+                            <button type="button" data-theme-val="light" class="theme-btn py-1.5 rounded-lg text-center transition-all text-tg-hint">Свет</button>
+                            <button type="button" data-theme-val="dark" class="theme-btn py-1.5 rounded-lg text-center transition-all text-tg-hint">Темн</button>
+                        </div>
+                    </div>
+                    <!-- Валюта -->
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-2 font-mono" data-i18n="currency">Отображение цен</label>
+                        <select id="currency-select" class="w-full p-2.5 rounded-xl text-xs bg-tg-secBg font-mono">
+                            <option value="USD">USD ($)</option>
+                            <option value="RUB">RUB (₽)</option>
+                            <option value="BYN">BYN (Br)</option>
+                            <option value="KZT">KZT (₸)</option>
+                            <option value="STARS">STARS (⭐)</option>
+                        </select>
+                    </div>
+                    <!-- Язык -->
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-2 font-mono" data-i18n="language">Язык</label>
+                        <select id="language-select" class="w-full p-2.5 rounded-xl text-xs bg-tg-secBg font-mono">
+                            <option value="ru">Русский</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Реальная Аватарка -->
+            <div id="user-avatar-container" class="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                <div class="w-24 h-24 bg-tg-secBg rounded-full flex items-center justify-center text-3xl">😎</div>
+            </div>
+            
             <h1 id="user-name" class="text-2xl font-semibold tracking-tight">Загрузка...</h1>
             <p id="user-tag" class="text-tg-hint mt-1 text-sm font-mono">@...</p>
         </header>
 
         <div class="space-y-5 animate-item delay-100">
+            <!-- Редактирование "О себе" -->
             <div class="flat-card p-5 rounded-2xl">
                 <div class="flex justify-between items-center mb-4">
-                    <span class="text-xs uppercase tracking-widest text-tg-hint font-mono">О себе</span>
-                    <button class="text-tg-link text-sm font-medium">Редактировать</button>
+                    <span class="text-xs uppercase tracking-widest text-tg-hint font-mono" data-i18n="about_me">О себе</span>
+                    <button id="edit-bio-btn" class="text-tg-link text-sm font-medium" data-i18n="edit">Редактировать</button>
                 </div>
-                <p class="text-sm leading-relaxed">Делаю интерфейсы, от которых люди плачут от счастья. Опыт 5 лет, люблю флэт-минимализм и типографику.</p>
+                
+                <div id="bio-display-wrapper">
+                    <p id="user-bio" class="text-sm leading-relaxed">Делаю интерфейсы, от которых люди плачут от счастья. Опыт 5 лет, люблю флэт-минимализм и типографику.</p>
+                </div>
+                
+                <div id="bio-edit-wrapper" class="hidden space-y-3">
+                    <textarea id="bio-textarea" rows="3" class="w-full p-3 rounded-xl text-sm resize-none"></textarea>
+                    <div class="flex justify-end gap-2">
+                        <button id="cancel-bio-btn" class="px-3 py-1.5 text-xs text-tg-hint bg-tg-secBg rounded-lg font-medium" data-i18n="cancel">Отмена</button>
+                        <button id="save-bio-btn" class="px-3 py-1.5 text-xs text-tg-btnText bg-tg-btn rounded-lg font-medium" data-i18n="save">Сохранить</button>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК (BottomSheet) -->
-    <div id="settings-modal" class="fixed inset-0 z-[100] opacity-0 pointer-events-none flex flex-col justify-end">
-        <div id="settings-overlay" class="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm"></div>
-        <div id="settings-sheet" class="relative bg-tg-bg rounded-t-[32px] w-full p-6 pb-12 transform translate-y-full shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
-            <div class="w-12 h-1.5 bg-tg-hint bg-opacity-30 rounded-full mx-auto mb-6"></div>
-            <h2 class="text-xl font-semibold mb-6">Настройки</h2>
-            
-            <div class="space-y-5">
-                <!-- Тема -->
-                <div>
-                    <label class="block text-xs uppercase tracking-widest text-tg-hint mb-2 font-mono">Тема оформления</label>
-                    <select id="theme-select" class="w-full p-4 rounded-2xl text-base bg-tg-secBg font-medium">
-                        <option value="adaptive">Адаптивная (как в Telegram)</option>
-                        <option value="light">Светлая</option>
-                        <option value="dark">Тёмная</option>
-                    </select>
-                </div>
-
-                <!-- Валюта -->
-                <div>
-                    <label class="block text-xs uppercase tracking-widest text-tg-hint mb-2 font-mono">Отображение валюты</label>
-                    <select id="currency-select" class="w-full p-4 rounded-2xl text-base bg-tg-secBg font-medium">
-                        <option value="USD">Доллары ($)</option>
-                        <option value="RUB">Российские рубли (₽)</option>
-                        <option value="BYN">Белорусские рубли (Br)</option>
-                        <option value="KZT">Тенге (₸)</option>
-                        <option value="STARS">Telegram Stars (⭐)</option>
-                    </select>
-                </div>
-
-                <!-- Язык (UI-заглушка) -->
-                <div>
-                    <label class="block text-xs uppercase tracking-widest text-tg-hint mb-2 font-mono">Язык приложения</label>
-                    <select class="w-full p-4 rounded-2xl text-base bg-tg-secBg font-medium">
-                        <option value="ru">Русский</option>
-                        <option value="en">English</option>
-                    </select>
-                </div>
+    <!-- ПОДРОБНОЕ ОКНО НОВОСТИ (Морф-оверлей) -->
+    <div id="news-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-5 opacity-0 transition-all duration-300">
+        <div class="bg-tg-bg border border-[var(--tg-theme-hint-color)] border-opacity-20 rounded-3xl p-6 max-w-sm w-full shadow-2xl transform scale-95 transition-all duration-300">
+            <div class="flex justify-between items-start mb-4">
+                <span id="news-detail-date" class="text-[10px] font-mono text-tg-hint uppercase tracking-wider">Дата</span>
+                <button id="close-news-btn" class="text-tg-hint hover:text-tg-text transition-colors">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
+            <h3 id="news-detail-title" class="text-xl font-semibold tracking-tight mb-2">Заголовок</h3>
+            <p id="news-detail-content" class="text-sm text-tg-hint leading-relaxed max-h-64 overflow-y-auto pr-1">Содержание новости...</p>
+        </div>
+    </div>
+
+    <!-- ОКНО ПОПОЛНЕНИЯ БАЛАНСА -->
+    <div id="topup-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-5 opacity-0 transition-all duration-300">
+        <div class="bg-tg-bg border border-[var(--tg-theme-hint-color)] border-opacity-20 rounded-3xl p-6 max-w-sm w-full shadow-2xl transform scale-95 transition-all duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-semibold tracking-tight" data-i18n="topup_title">Пополнение баланса</h3>
+                <button id="close-topup-btn" class="text-tg-hint hover:text-tg-text transition-colors">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <form id="topup-form" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-1 font-mono" data-i18n="budget">Сумма ($)</label>
+                    <input type="number" id="topup-amount" placeholder="50.00" class="w-full p-3.5 rounded-2xl text-base font-mono" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-1 font-mono" data-i18n="card_number">Номер карты</label>
+                    <input type="text" id="topup-card" placeholder="4400 0000 0000 0000" class="w-full p-3.5 rounded-2xl text-base font-mono" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-1 font-mono" data-i18n="expiry">Срок</label>
+                        <input type="text" id="topup-expiry" placeholder="MM/YY" class="w-full p-3.5 rounded-2xl text-base font-mono" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-1 font-mono">CVC</label>
+                        <input type="password" id="topup-cvc" placeholder="***" maxlength="3" class="w-full p-3.5 rounded-2xl text-base font-mono" required>
+                    </div>
+                </div>
+                <button type="submit" id="submit-topup-btn" class="w-full bg-tg-btn text-tg-btnText py-4 rounded-2xl font-medium text-base transition-all active:scale-[0.98] mt-4 flex justify-center items-center gap-2">
+                    <span data-i18n="topup">Пополнить</span>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -284,11 +400,11 @@
     <nav class="fixed bottom-0 left-0 w-full bg-tg-bg border-t border-[var(--tg-theme-hint-color)] border-opacity-20 pt-2 px-6 flex justify-between items-center z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] pb-6">
         <button class="nav-btn nav-link text-tg-text active-nav p-2 flex flex-col items-center gap-1 transition-colors" data-target="view-home">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M4 10v10a1 1 0 001 1h14a1 1 0 001-1V10M9 21V9h6v12"></path></svg>
-            <span class="text-[10px] font-medium font-mono">Главная</span>
+            <span class="text-[10px] font-medium font-mono" data-i18n="overview">Главная</span>
         </button>
         <button class="nav-btn nav-link text-tg-hint p-2 flex flex-col items-center gap-1 transition-colors" data-target="view-tasks">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z"></path></svg>
-            <span class="text-[10px] font-medium font-mono">Поиск</span>
+            <span class="text-[10px] font-medium font-mono" data-i18n="tasks">Поиск</span>
         </button>
         <button class="nav-btn nav-link text-tg-hint p-2 flex flex-col items-center gap-1 transition-colors relative -top-2" data-target="view-create">
             <div class="bg-tg-btn text-tg-btnText w-12 h-12 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform">
@@ -297,57 +413,155 @@
         </button>
         <button class="nav-btn nav-link text-tg-hint p-2 flex flex-col items-center gap-1 transition-colors" data-target="view-profile">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-            <span class="text-[10px] font-medium font-mono">Профиль</span>
+            <span class="text-[10px] font-medium font-mono" data-i18n="profile">Профиль</span>
         </button>
     </nav>
 
     <script>
-        // Изолируем логику и ждем полной загрузки DOM-дерева
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Безопасная инициализация Telegram
-            // Если открыто не в Telegram, используем заглушку, чтобы код не ломался
-            const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : {
-                expand: () => {},
-                ready: () => {},
-                HapticFeedback: {
-                    selectionChanged: () => {},
-                    impactOccurred: () => {},
-                    notificationOccurred: () => {}
+            // ==========================================
+            // ЛОКАЛИЗАЦИЯ (i18n)
+            // ==========================================
+            const i18n = {
+                ru: {
+                    overview: "Обзор",
+                    tasks_board: "Заказов на бирже",
+                    find_requests: "Найди работу по душе",
+                    tasks: "Заказы",
+                    new_request: "Новая просьба",
+                    about_me: "О себе",
+                    settings: "Настройки",
+                    publish: "Опубликовать заказ",
+                    save: "Сохранить",
+                    cancel: "Отмена",
+                    edit: "Редактировать",
+                    topup: "Пополнить",
+                    topup_title: "Пополнение баланса",
+                    card_number: "Номер карты",
+                    expiry: "Срок",
+                    placeholder_desc: "Опишите задачу максимально подробно...",
+                    loading: "Загрузка...",
+                    programming: "Программирование",
+                    design: "Дизайн и UI",
+                    editing: "Видеомонтаж",
+                    translation: "Перевод",
+                    other: "Другое",
+                    category: "Категория",
+                    budget: "Бюджет",
+                    news_title: "Новости платформы",
+                    all_categories: "Все",
+                    title: "Заголовок",
+                    description: "Описание задачи",
+                    photo: "Фото проблемы (опционально)",
+                    theme: "Оформление",
+                    currency: "Отображение цен",
+                    language: "Язык",
+                    profile: "Профиль",
+                    keywords: "Поиск по ключевым словам..."
                 },
-                setHeaderColor: () => {},
-                setBackgroundColor: () => {},
-                showAlert: (msg) => alert(msg),
-                initDataUnsafe: { user: { id: 'test_123', first_name: 'Гость', username: 'guest' } }
+                en: {
+                    overview: "Overview",
+                    tasks_board: "Orders on Board",
+                    find_requests: "Find work you love",
+                    tasks: "Orders",
+                    new_request: "New Request",
+                    about_me: "About me",
+                    settings: "Settings",
+                    publish: "Publish Request",
+                    save: "Save",
+                    cancel: "Cancel",
+                    edit: "Edit",
+                    topup: "Top Up",
+                    topup_title: "Deposit Balance",
+                    card_number: "Card Number",
+                    expiry: "Expiry",
+                    placeholder_desc: "Describe your request in detail...",
+                    loading: "Loading tasks...",
+                    programming: "Programming",
+                    design: "Design & UI",
+                    editing: "Video Editing",
+                    translation: "Translation",
+                    other: "Other",
+                    category: "Category",
+                    budget: "Budget",
+                    news_title: "Platform News",
+                    all_categories: "All",
+                    title: "Title",
+                    description: "Job Description",
+                    photo: "Issue Photo (optional)",
+                    theme: "Appearance",
+                    currency: "Currency Display",
+                    language: "Language",
+                    profile: "Profile",
+                    keywords: "Search by keywords..."
+                }
             };
 
-            try {
-                if (tg.expand) tg.expand();
-                if (tg.ready) tg.ready();
-            } catch(e) { console.warn("TG Init Error:", e); }
+            let currentLang = localStorage.getItem('app_lang') || 'ru';
 
-            // 2. Безопасная инициализация Supabase
-            const supabaseUrl = 'https://mjraxretmdniudrqhjrq.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qcmF4cmV0bWRuaXVkcnFoanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTg5OTYsImV4cCI6MjA5NTU3NDk5Nn0.Y_Zu3ZDer2kbwuFrVWko2s1Dgyb7JSG377kWfLunWIk';
-            
-            let supabase = null;
-            if (window.supabase) {
-                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-            } else {
-                console.error("Supabase CDN не загружен!");
+            function applyLocalization() {
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (i18n[currentLang] && i18n[currentLang][key]) {
+                        el.innerText = i18n[currentLang][key];
+                    }
+                });
+
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                    const key = el.getAttribute('data-i18n-placeholder');
+                    if (i18n[currentLang] && i18n[currentLang][key]) {
+                        el.setAttribute('placeholder', i18n[currentLang][key]);
+                    }
+                });
             }
 
             // ==========================================
-            // ЛОГИКА НАСТРОЕК (Валюта и Тема)
+            // ИНИЦИАЛИЗАЦИЯ TELEGRAM И SUPABASE
             // ==========================================
-            const rates = { USD: 1, RUB: 90.5, BYN: 3.25, KZT: 450, STARS: 50 };
+            const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : {
+                expand: () => {}, ready: () => {},
+                HapticFeedback: { selectionChanged: () => {}, impactOccurred: () => {}, notificationOccurred: () => {} },
+                setHeaderColor: () => {}, setBackgroundColor: () => {},
+                showAlert: (msg) => alert(msg),
+                initDataUnsafe: { user: { id: 'test_123', first_name: 'Гость', username: 'guest', photo_url: '' } }
+            };
+
+            try { tg.expand(); tg.ready(); } catch(e) {}
+
+            const supabaseUrl = 'https://mjraxretmdniudrqhjrq.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qcmF4cmV0bWRuaXVkcnFoanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTg5OTYsImV4cCI6MjA5NTU3NDk5Nn0.Y_Zu3ZDer2kbwuFrVWko2s1Dgyb7JSG377kWfLunWIk';
+            const supabase = window.supabase ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
+
+            // ==========================================
+            // КУРСЫ ВАЛЮТ (API И КОНВЕРТАЦИЯ)
+            // ==========================================
+            let rates = { USD: 1, RUB: 90.5, BYN: 3.25, KZT: 450, STARS: 50 };
             const symbols = { USD: '$', RUB: '₽', BYN: 'Br', KZT: '₸', STARS: '⭐' };
             
             let currentCurrency = localStorage.getItem('app_currency') || 'USD';
             let currentTheme = localStorage.getItem('app_theme') || 'adaptive';
 
+            async function fetchExchangeRates() {
+                try {
+                    const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                    if (!res.ok) throw new Error();
+                    const data = await res.json();
+                    if (data.result === 'success') {
+                        rates.USD = 1;
+                        rates.RUB = data.rates.RUB || 90.5;
+                        rates.BYN = data.rates.BYN || 3.25;
+                        rates.KZT = data.rates.KZT || 450;
+                        rates.STARS = 50; // Фиксированный Telegram Stars курс
+                        updateAllPrices();
+                    }
+                } catch(e) {
+                    console.warn("Курсы валют загружены из локального кэша.");
+                }
+            }
+
             const formatPrice = (usdPrice) => {
                 const val = parseFloat(usdPrice) || 0;
-                const converted = (val * rates[currentCurrency]).toFixed(currentCurrency === 'STARS' ? 0 : 0);
+                const converted = (val * rates[currentCurrency]).toFixed(currentCurrency === 'STARS' ? 0 : 2);
                 if (currentCurrency === 'USD') return `$${converted}`;
                 if (currentCurrency === 'STARS') return `${converted} ⭐`;
                 return `${converted} ${symbols[currentCurrency]}`;
@@ -360,6 +574,9 @@
                 });
             };
 
+            // ==========================================
+            // ЛОГИКА ТЕМ ОФОРМЛЕНИЯ
+            // ==========================================
             const applyTheme = (theme) => {
                 document.body.setAttribute('data-theme', theme);
                 try {
@@ -367,7 +584,7 @@
                         tg.setHeaderColor?.('bg_color');
                         tg.setBackgroundColor?.('bg_color');
                     } else {
-                        const color = theme === 'dark' ? '#1c1c1e' : '#ffffff';
+                        const color = theme === 'dark' ? '#121214' : '#ffffff';
                         tg.setHeaderColor?.(color);
                         tg.setBackgroundColor?.(color);
                     }
@@ -375,27 +592,96 @@
             };
 
             applyTheme(currentTheme);
-            const themeSelect = document.getElementById('theme-select');
-            const currencySelect = document.getElementById('currency-select');
-            if (themeSelect) themeSelect.value = currentTheme;
-            if (currencySelect) currencySelect.value = currentCurrency;
+
+            // Рендер активной кнопки темы
+            function renderThemePills() {
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    if (btn.getAttribute('data-theme-val') === currentTheme) {
+                        btn.className = "theme-btn py-1.5 rounded-lg text-center transition-all bg-tg-bg shadow-sm text-tg-text";
+                    } else {
+                        btn.className = "theme-btn py-1.5 rounded-lg text-center transition-all text-tg-hint";
+                    }
+                });
+            }
+            renderThemePills();
+
+            // ==========================================
+            // ЛОГИКА НОВОСТЕЙ (МАССИВ / ШАБЛОН)
+            // ==========================================
+            const platformNews = [
+                {
+                    id: 1,
+                    title: "Запуск версии 2.0.0",
+                    short: "Грандиозный редизайн, живые валюты и фильтры категорий.",
+                    full: "Мы полностью переписали и модернизировали дизайн биржи kk!<br><br><b>Что нового:</b><br>• Выпадающие Popover настройки вместо громоздких штор.<br>• Смарт-хедер с постоянным балансом.<br>• Загрузка реальных курсов валют из центральных API.<br>• Фото в заказах теперь сжимается и загружается бесшовно.<br>• Интуитивное редактирование личного профиля.",
+                    date: "29.05.2026",
+                    time: "11:00"
+                },
+                {
+                    id: 2,
+                    title: "Telegram Stars уже здесь!",
+                    short: "Оплачивайте фриланс напрямую внутренней валютой мессенджера.",
+                    full: "Проводить сделки стало ещё проще.<br><br>В разделе валют теперь можно переключиться на Telegram Stars (⭐). Приложение автоматически конвертирует всю стоимость заказов на основе официального соотношения $ к Stars.",
+                    date: "28.05.2026",
+                    time: "18:30"
+                }
+            ];
+
+            function renderNews() {
+                const container = document.getElementById('news-container');
+                if (!container) return;
+                container.innerHTML = platformNews.map(item => `
+                    <div class="flat-card p-5 rounded-2xl cursor-pointer active:scale-[0.99] transition-transform news-card" data-news-id="${item.id}">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-tg-hint text-xs font-mono">${item.date} • ${item.time}</span>
+                            <span class="bg-tg-secBg text-xs font-semibold px-2 py-0.5 rounded-md text-tg-hint">NEWS</span>
+                        </div>
+                        <h3 class="text-base font-semibold tracking-tight mb-1">${item.title}</h3>
+                        <p class="text-tg-hint text-xs leading-relaxed line-clamp-2">${item.short}</p>
+                    </div>
+                `).join('');
+
+                // Вешаем события
+                document.querySelectorAll('.news-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const id = card.getAttribute('data-news-id');
+                        const newsItem = platformNews.find(n => n.id == id);
+                        if (newsItem) {
+                            document.getElementById('news-detail-date').innerText = `${newsItem.date} в ${newsItem.time}`;
+                            document.getElementById('news-detail-title').innerText = newsItem.title;
+                            document.getElementById('news-detail-content').innerHTML = newsItem.full;
+                            
+                            const modal = document.getElementById('news-modal');
+                            modal.classList.remove('hidden');
+                            modal.classList.add('flex');
+                            setTimeout(() => {
+                                modal.classList.remove('opacity-0');
+                                modal.querySelector('div').classList.remove('scale-95');
+                            }, 50);
+                        }
+                    });
+                });
+            }
+
+            document.getElementById('close-news-btn').addEventListener('click', () => {
+                const modal = document.getElementById('news-modal');
+                modal.classList.add('opacity-0');
+                modal.querySelector('div').classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                }, 300);
+            });
 
             // ==========================================
             // НАДЕЖНАЯ НАВИГАЦИЯ
             // ==========================================
             const switchTab = (tabId) => {
-                // Прячем все вкладки
-                document.querySelectorAll('.view-section').forEach(el => {
-                    el.classList.remove('active');
-                });
+                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
                 
-                // Показываем нужную
                 const target = document.getElementById(tabId);
-                if (target) {
-                    target.classList.add('active');
-                }
+                if (target) target.classList.add('active');
                 
-                // Обновляем иконки в меню
                 document.querySelectorAll('.nav-btn').forEach(btn => {
                     if (btn.getAttribute('data-target') === tabId) {
                         btn.classList.replace('text-tg-hint', 'text-tg-text');
@@ -405,21 +691,21 @@
                 });
 
                 if (tabId === 'view-tasks') loadTasks();
+                // При закрытии вкладки убираем поповер настроек
+                document.getElementById('settings-popover').classList.add('hidden');
                 try { tg.HapticFeedback?.selectionChanged?.(); } catch(e){}
             };
 
-            // Делегирование событий клика для навигации
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
-                    // Безопасное получение target, даже если клик был по иконке внутри кнопки
                     const targetId = link.getAttribute('data-target') || link.closest('.nav-link')?.getAttribute('data-target');
                     if (targetId) switchTab(targetId);
                 });
             });
 
             // ==========================================
-            // ЛОГИКА ИЗОБРАЖЕНИЙ
+            // ЛОГИКА ФОТО (Base64 Превью)
             // ==========================================
             let base64Image = null;
             const imageInput = document.getElementById('task-image');
@@ -444,137 +730,177 @@
             }
 
             // ==========================================
-            // РАБОТА С БД (SUPABASE)
+            // СВЯЗЬ С SUPABASE (ЗАКАЗЫ И КАТЕГОРИИ)
             // ==========================================
+            let allTasks = [];
+            let activeCategory = 'all';
+
             async function loadTasks() {
                 const listContainer = document.getElementById('tasks-list');
                 if (!listContainer) return;
 
                 if (!supabase) {
-                    listContainer.innerHTML = '<p class="text-center text-red-500 font-mono text-sm py-4">Ошибка: Supabase недоступен</p>';
+                    listContainer.innerHTML = '<p class="text-center text-red-500 font-mono text-sm py-4">Supabase connection lost</p>';
                     return;
                 }
 
-                listContainer.innerHTML = '<p class="text-center text-tg-hint font-mono text-sm py-4">Загрузка заказов...</p>';
+                listContainer.innerHTML = '<p class="text-center text-tg-hint font-mono text-sm py-4" data-i18n="loading">Загрузка заказов...</p>';
+                applyLocalization();
 
                 try {
                     const { data, error } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-                    
                     if (error) throw error;
 
-                    if (!data || data.length === 0) {
-                        listContainer.innerHTML = `<p class="text-center text-tg-hint font-mono text-sm py-4">Пока нет доступных заказов</p>`;
-                    } else {
-                        listContainer.innerHTML = data.map(task => `
-                            <div class="flat-card p-5 rounded-2xl animate-item">
-                                ${task.image_url ? `<img src="${task.image_url}" class="w-full h-32 object-cover rounded-xl mb-4 border border-[var(--tg-theme-hint-color)] border-opacity-20" alt="task image">` : ''}
-                                <div class="flex justify-between items-start mb-3">
-                                    <span class="bg-tg-secBg text-xs px-2 py-1 rounded-md font-mono text-tg-hint">TASK</span>
-                                    <span class="font-mono font-medium text-lg price-tag" data-usd="${task.price || 0}">${formatPrice(task.price || 0)}</span>
-                                </div>
-                                <h3 class="text-lg font-medium leading-tight mb-2">${task.title || 'Без названия'}</h3>
-                                <p class="text-tg-hint text-sm line-clamp-3 leading-relaxed">${task.description || 'Без описания'}</p>
-                                <button class="mt-4 w-full border border-[var(--tg-theme-hint-color)] text-tg-text py-2 rounded-xl text-sm font-medium active:bg-tg-secBg transition-colors">Откликнуться</button>
-                            </div>
-                        `).join('');
-                    }
-
-                    // Обновляем счетчики на главной странице
-                    document.querySelectorAll('.cat-count').forEach(label => label.innerText = `${data ? data.length : 0} заказов`);
+                    allTasks = data || [];
+                    renderFilteredTasks();
                 } catch (err) {
-                    console.error("Ошибка загрузки:", err);
-                    listContainer.innerHTML = `<p class="text-center text-red-500 font-mono text-sm py-4">Не удалось загрузить данные.</p>`;
+                    console.error(err);
+                    listContainer.innerHTML = `<p class="text-center text-red-500 font-mono text-sm py-4">Ошибка загрузки</p>`;
                 }
             }
 
-const taskForm = document.getElementById('task-form');
-if (taskForm) {
-    taskForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!supabase) return tg.showAlert?.('БД недоступна');
+            function renderFilteredTasks() {
+                const listContainer = document.getElementById('tasks-list');
+                const searchQuery = document.getElementById('search-input').value.toLowerCase();
+                const minPrice = parseFloat(document.getElementById('filter-price-min').value) || 0;
+                const maxPrice = parseFloat(document.getElementById('filter-price-max').value) || Infinity;
 
-        const title = document.getElementById('task-title')?.value || '';
-        const desc = document.getElementById('task-desc')?.value || '';
-        const price = document.getElementById('task-price')?.value || 0;
-        const user_id = tg.initDataUnsafe?.user?.id || 'test_user';
+                const filtered = allTasks.filter(task => {
+                    const matchCategory = activeCategory === 'all' || task.category === activeCategory;
+                    const matchSearch = task.title.toLowerCase().includes(searchQuery) || (task.description && task.description.toLowerCase().includes(searchQuery));
+                    const matchPrice = (task.price || 0) >= minPrice && (task.price || 0) <= maxPrice;
+                    return matchCategory && matchSearch && matchPrice;
+                });
 
-        const submitBtn = document.getElementById('submit-task');
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.5';
-        }
+                if (filtered.length === 0) {
+                    listContainer.innerHTML = `<p class="text-center text-tg-hint font-mono text-sm py-8">Ничего не найдено</p>`;
+                    return;
+                }
 
-        try {
-            let imageUrl = null;
-
-            // 1. Логика загрузки изображения в Storage
-            const fileInput = document.getElementById('task-image');
-            if (fileInput && fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const fileExt = file.name.split('.').pop();
-                // Генерируем уникальное имя файла
-                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-                const filePath = `tasks/${fileName}`; // Путь внутри бакета
-
-                const { error: uploadError } = await supabase.storage
-                    .from('tasks-images') // ИМЯ ВАШЕГО БАКЕТА
-                    .upload(filePath, file);
-
-                if (uploadError) throw new Error('Ошибка загрузки фото: ' + uploadError.message);
-
-                // Получаем публичную ссылку
-                const { data } = supabase.storage
-                    .from('tasks-images')
-                    .getPublicUrl(filePath);
+                listContainer.innerHTML = filtered.map(task => {
+                    const catName = i18n[currentLang][task.category] || task.category || 'TASK';
+                    return `
+                        <div class="flat-card p-5 rounded-2xl animate-item">
+                            ${task.image_url ? `<img src="${task.image_url}" class="w-full h-32 object-cover rounded-xl mb-4 border border-[var(--tg-theme-hint-color)] border-opacity-20">` : ''}
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-tg-secBg text-[10px] px-2 py-1 rounded-md font-mono text-tg-hint uppercase tracking-wider">${catName}</span>
+                                <span class="font-mono font-medium text-lg price-tag" data-usd="${task.price || 0}">${formatPrice(task.price || 0)}</span>
+                            </div>
+                            <h3 class="text-lg font-medium leading-tight mb-2">${task.title || 'Без названия'}</h3>
+                            <p class="text-tg-hint text-sm line-clamp-3 leading-relaxed">${task.description || 'Без описания'}</p>
+                            <button class="mt-4 w-full border border-[var(--tg-theme-hint-color)] text-tg-text py-2.5 rounded-xl text-sm font-medium active:bg-tg-secBg transition-colors">Откликнуться</button>
+                        </div>
+                    `;
+                }).join('');
                 
-                imageUrl = data.publicUrl;
+                updateAllPrices();
             }
 
-            // 2. Вставка данных в БД с полученной ссылкой
-            const { error } = await supabase.from('tasks').insert([
-                { 
-                    title: title, 
-                    description: desc, 
-                    price: price, 
-                    creator_id: user_id, 
-                    image_url: imageUrl // Сохраняем URL, а не base64
-                }
-            ]);
-            
-            if (error) throw error;
+            // Фильтры при вводе
+            document.getElementById('search-input').addEventListener('input', renderFilteredTasks);
+            document.getElementById('filter-price-min').addEventListener('input', renderFilteredTasks);
+            document.getElementById('filter-price-max').addEventListener('input', renderFilteredTasks);
 
-            try { tg.HapticFeedback?.notificationOccurred?.('success'); } catch(e){}
-            tg.showAlert?.('Заказ успешно опубликован!');
-            
-            // Сброс формы и UI
-            taskForm.reset();
-            if (previewContainer) previewContainer.classList.add('hidden');
-            if (uploadUi) uploadUi.classList.remove('hidden');
-            
-            updateUI(); 
-            switchTab('view-tasks');
-            
-        } catch (err) {
-            tg.showAlert?.('Ошибка: ' + err.message);
-        } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = '1';
+            // Клик по пилюлям категорий
+            document.querySelectorAll('.category-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    document.querySelectorAll('.category-pill').forEach(p => {
+                        p.className = "category-pill bg-tg-secBg text-tg-hint px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all";
+                    });
+                    pill.className = "category-pill bg-tg-btn text-tg-btnText px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap active:scale-95 transition-all";
+                    activeCategory = pill.getAttribute('data-category');
+                    renderFilteredTasks();
+                });
+            });
+
+            // Форма создания заказа
+            const taskForm = document.getElementById('task-form');
+            if (taskForm) {
+                taskForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (!supabase) return tg.showAlert?.('БД недоступна');
+
+                    const title = document.getElementById('task-title')?.value || '';
+                    const desc = document.getElementById('task-desc')?.value || '';
+                    const price = document.getElementById('task-price')?.value || 0;
+                    const cat = document.getElementById('task-category')?.value || 'other';
+                    const user_id = tg.initDataUnsafe?.user?.id || 'test_user';
+
+                    const submitBtn = document.getElementById('submit-task');
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.5';
+
+                    try {
+                        const { error } = await supabase.from('tasks').insert([
+                            { title, description: desc, price, creator_id: user_id, category: cat, image_url: base64Image }
+                        ]);
+                        
+                        if (error) throw error;
+
+                        try { tg.HapticFeedback?.notificationOccurred?.('success'); } catch(e){}
+                        tg.showAlert?.('Заказ успешно опубликован!');
+                        
+                        taskForm.reset();
+                        base64Image = null;
+                        if (previewContainer) previewContainer.classList.add('hidden');
+                        if (uploadUi) uploadUi.classList.remove('hidden');
+                        
+                        updateUI(); 
+                        switchTab('view-tasks');
+                    } catch (err) {
+                        tg.showAlert?.('Ошибка: ' + err.message);
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                    }
+                });
             }
-        }
-    });
-}
+
+            // ==========================================
+            // БАЛАНС И ЛИЧНЫЕ ДАННЫЕ (C КЭШИРОВАНИЕМ)
+            // ==========================================
+            let userBalance = parseFloat(localStorage.getItem('user_balance')) || 120.00;
+            let userBioText = localStorage.getItem('user_bio') || "Делаю интерфейсы, от которых люди плачут от счастья. Опыт 5 лет, люблю флэт-минимализм и типографику.";
 
             async function updateUI() {
+                // Баланс
+                const balanceEl = document.getElementById('global-balance');
+                if (balanceEl) {
+                    balanceEl.setAttribute('data-usd', userBalance);
+                    updateAllPrices();
+                }
+
+                // Био о себе
+                document.getElementById('user-bio').innerText = userBioText;
+                document.getElementById('bio-textarea').value = userBioText;
+
+                // Телеграм имя и юзерпик
                 const user = tg.initDataUnsafe?.user;
                 const userNameEl = document.getElementById('user-name');
                 const userTagEl = document.getElementById('user-tag');
                 
                 if (user) {
-                    if (userNameEl) userNameEl.innerText = user.first_name || 'Без имени';
-                    if (userTagEl) userTagEl.innerText = '@' + (user.username || 'user');
+                    if (userNameEl) userNameEl.innerText = user.first_name || 'Гость';
+                    if (userTagEl) userTagEl.innerText = user.username ? '@' + user.username : '@user';
+                    
+                    // Реальная аватарка
+                    const avatarContainer = document.getElementById('user-avatar-container');
+                    if (avatarContainer) {
+                        if (user.photo_url) {
+                            avatarContainer.innerHTML = `<img src="${user.photo_url}" class="w-24 h-24 rounded-full object-cover border-2 border-[var(--tg-theme-hint-color)] border-opacity-20 shadow-lg">`;
+                        } else {
+                            // Генерация потрясающего флэт-градиента с инициалами
+                            const initials = (user.first_name || 'G').substring(0,2).toUpperCase();
+                            avatarContainer.innerHTML = `
+                                <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-2xl tracking-wide shadow-lg">
+                                    ${initials}
+                                </div>
+                            `;
+                        }
+                    }
                 }
 
+                // Счетчик активных постов
                 const userId = user?.id || 'test_user';
                 if (supabase) {
                     try {
@@ -582,50 +908,175 @@ if (taskForm) {
                         if (!error && document.getElementById('tasks-count')) {
                             document.getElementById('tasks-count').innerText = count || 0;
                         }
-                    } catch(e) { console.error(e); }
+                    } catch(e) {}
                 }
             }
 
+            // Редактирование профиля
+            const editBioBtn = document.getElementById('edit-bio-btn');
+            const saveBioBtn = document.getElementById('save-bio-btn');
+            const cancelBioBtn = document.getElementById('cancel-bio-btn');
+            const bioDisplayWrapper = document.getElementById('bio-display-wrapper');
+            const bioEditWrapper = document.getElementById('bio-edit-wrapper');
+
+            editBioBtn.addEventListener('click', () => {
+                bioDisplayWrapper.classList.add('hidden');
+                bioEditWrapper.classList.remove('hidden');
+                editBioBtn.classList.add('hidden');
+            });
+
+            cancelBioBtn.addEventListener('click', () => {
+                bioDisplayWrapper.classList.remove('hidden');
+                bioEditWrapper.classList.add('hidden');
+                editBioBtn.classList.remove('hidden');
+            });
+
+            saveBioBtn.addEventListener('click', () => {
+                const newBio = document.getElementById('bio-textarea').value;
+                userBioText = newBio;
+                localStorage.setItem('user_bio', newBio);
+                document.getElementById('user-bio').innerText = newBio;
+
+                bioDisplayWrapper.classList.remove('hidden');
+                bioEditWrapper.classList.add('hidden');
+                editBioBtn.classList.remove('hidden');
+                try { tg.HapticFeedback?.notificationOccurred?.('success'); } catch(e){}
+            });
+
             // ==========================================
-            // ЛОГИКА МОДАЛЬНОГО ОКНА НАСТРОЕК
+            // НАСТРОЙКИ (POPOVER ИЗ ТРЕХ ТОЧЕК)
             // ==========================================
-            const body = document.body;
+            const settingsPopover = document.getElementById('settings-popover');
             const openSettingsBtn = document.getElementById('open-settings-btn');
-            const settingsOverlay = document.getElementById('settings-overlay');
 
-            if (openSettingsBtn) {
-                openSettingsBtn.addEventListener('click', () => {
-                    body.classList.add('modal-open');
-                    try { tg.HapticFeedback?.impactOccurred?.('light'); } catch(e){}
-                });
-            }
+            openSettingsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                settingsPopover.classList.toggle('hidden');
+                try { tg.HapticFeedback?.impactOccurred?.('light'); } catch(e){}
+            });
 
-            if (settingsOverlay) {
-                settingsOverlay.addEventListener('click', () => {
-                    body.classList.remove('modal-open');
-                });
-            }
+            document.addEventListener('click', (e) => {
+                if (!settingsPopover.contains(e.target) && e.target !== openSettingsBtn) {
+                    settingsPopover.classList.add('hidden');
+                }
+            });
 
-            if (themeSelect) {
-                themeSelect.addEventListener('change', (e) => {
-                    currentTheme = e.target.value;
-                    localStorage.setItem('app_theme', currentTheme);
-                    applyTheme(currentTheme);
+            // Тема оформление
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const theme = btn.getAttribute('data-theme-val');
+                    currentTheme = theme;
+                    localStorage.setItem('app_theme', theme);
+                    applyTheme(theme);
+                    renderThemePills();
                     try { tg.HapticFeedback?.selectionChanged?.(); } catch(e){}
                 });
-            }
+            });
 
-            if (currencySelect) {
-                currencySelect.addEventListener('change', (e) => {
-                    currentCurrency = e.target.value;
-                    localStorage.setItem('app_currency', currentCurrency);
-                    updateAllPrices();
-                    try { tg.HapticFeedback?.selectionChanged?.(); } catch(e){}
-                });
-            }
+            // Валюта
+            const currencySelect = document.getElementById('currency-select');
+            currencySelect.addEventListener('change', (e) => {
+                currentCurrency = e.target.value;
+                localStorage.setItem('app_currency', currentCurrency);
+                updateAllPrices();
+                try { tg.HapticFeedback?.selectionChanged?.(); } catch(e){}
+            });
 
-            // Запускаем первичное обновление данных после привязки всех событий
+            // Язык
+            const languageSelect = document.getElementById('language-select');
+            languageSelect.value = currentLang;
+            languageSelect.addEventListener('change', (e) => {
+                currentLang = e.target.value;
+                localStorage.setItem('app_lang', currentLang);
+                applyLocalization();
+                try { tg.HapticFeedback?.selectionChanged?.(); } catch(e){}
+            });
+
+            // ==========================================
+            // ДЕПОЗИТ (ПОПОЛНЕНИЕ С КАРТЫ)
+            // ==========================================
+            const topupModal = document.getElementById('topup-modal');
+            const globalTopupBtn = document.getElementById('global-topup-btn');
+            const closeTopupBtn = document.getElementById('close-topup-btn');
+
+            const openTopup = () => {
+                topupModal.classList.remove('hidden');
+                topupModal.classList.add('flex');
+                setTimeout(() => {
+                    topupModal.classList.remove('opacity-0');
+                    topupModal.querySelector('div').classList.remove('scale-95');
+                }, 50);
+            };
+
+            const closeTopup = () => {
+                topupModal.classList.add('opacity-0');
+                topupModal.querySelector('div').classList.add('scale-95');
+                setTimeout(() => {
+                    topupModal.classList.remove('flex');
+                    topupModal.classList.add('hidden');
+                }, 300);
+            };
+
+            globalTopupBtn.addEventListener('click', openTopup);
+            closeTopupBtn.addEventListener('click', closeTopup);
+
+            // Маска карты
+            document.getElementById('topup-card').addEventListener('input', function(e) {
+                let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                let matches = v.match(/\d{4,16}/g);
+                let match = matches && matches[0] || '';
+                let parts = [];
+                for (let i = 0, len = match.length; i < len; i += 4) {
+                    parts.push(match.substring(i, i + 4));
+                }
+                if (parts.length > 0) {
+                    e.target.value = parts.join(' ');
+                } else {
+                    e.target.value = v;
+                }
+            });
+
+            document.getElementById('topup-expiry').addEventListener('input', function(e) {
+                let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                if (v.length >= 2) {
+                    e.target.value = v.substring(0, 2) + '/' + v.substring(2, 4);
+                } else {
+                    e.target.value = v;
+                }
+            });
+
+            document.getElementById('topup-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const amount = parseFloat(document.getElementById('topup-amount').value) || 0;
+                
+                const submitBtn = document.getElementById('submit-topup-btn');
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+
+                // Имитация проведения транзакции банком
+                setTimeout(() => {
+                    userBalance += amount;
+                    localStorage.setItem('user_balance', userBalance);
+                    updateUI();
+                    
+                    try { tg.HapticFeedback?.notificationOccurred?.('success'); } catch(e){}
+                    tg.showAlert?.(`Успешно пополнено на ${formatPrice(amount)}!`);
+                    
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                    document.getElementById('topup-form').reset();
+                    closeTopup();
+                }, 1500);
+            });
+
+            // ==========================================
+            // ЗАПУСК
+            // ==========================================
+            applyLocalization();
+            renderNews();
             updateUI();
+            fetchExchangeRates();
+            loadTasks();
         });
     </script>
 </body>
