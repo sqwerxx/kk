@@ -115,6 +115,7 @@
         #settings-popover {
             transform-origin: top right;
             transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+            z-index: 100 !important;
         }
         #settings-popover.hidden {
             display: none;
@@ -145,8 +146,8 @@
     <!-- ГЛАВНАЯ СТРАНИЦА -->
     <main id="view-home" class="view-section active px-5">
         <header class="mb-6 animate-item">
-            <h1 class="text-3xl font-semibold tracking-tight" data-i18n="overview">Обзор</h1>
-            <p class="text-tg-hint mt-1 text-sm font-mono">welcome_back</p>
+            <h1 class="text-3xl font-semibold tracking-tight" data-i18n="overview">Главная</h1>
+            <p class="text-tg-hint mt-1 text-sm font-mono">Добро пожаловать!</p>
         </header>
 
         <div class="grid grid-cols-1 gap-4 mb-8 animate-item delay-100">
@@ -215,7 +216,7 @@
     <main id="view-create" class="view-section px-5">
         <header class="mb-8 animate-item">
             <h1 class="text-3xl font-semibold tracking-tight" data-i18n="new_request">Новая просьба</h1>
-            <p class="text-tg-hint mt-1 text-sm font-mono">create_request</p>
+            <p class="text-tg-hint mt-1 text-sm font-mono">Опишите вашу проблему</p>
         </header>
 
         <form id="task-form" class="space-y-5 animate-item delay-100">
@@ -288,9 +289,9 @@
                     <div>
                         <label class="block text-[10px] uppercase tracking-widest text-tg-hint mb-2 font-mono" data-i18n="theme">Оформление</label>
                         <div class="grid grid-cols-3 gap-1 bg-tg-secBg p-1 rounded-xl text-[11px] font-medium">
-                            <button type="button" data-theme-val="adaptive" class="theme-btn py-1.5 rounded-lg text-center transition-all bg-tg-bg shadow-sm text-tg-text">Авто</button>
-                            <button type="button" data-theme-val="light" class="theme-btn py-1.5 rounded-lg text-center transition-all text-tg-hint">Свет</button>
-                            <button type="button" data-theme-val="dark" class="theme-btn py-1.5 rounded-lg text-center transition-all text-tg-hint">Темн</button>
+                            <button type="button" data-theme-val="adaptive" class="theme-btn py-1.5 rounded-lg text-center transition-all bg-tg-bg shadow-sm text-tg-text">Адаптивная</button>
+                            <button type="button" data-theme-val="light" class="theme-btn py-1.5 rounded-lg text-center transition-all text-tg-hint">Светлая</button>
+                            <button type="button" data-theme-val="dark" class="theme-btn py-1.5 rounded-lg text-center transition-all text-tg-hint">Темная</button>
                         </div>
                     </div>
                     <!-- Валюта -->
@@ -333,7 +334,7 @@
                 </div>
                 
                 <div id="bio-display-wrapper">
-                    <p id="user-bio" class="text-sm leading-relaxed">Делаю интерфейсы, от которых люди плачут от счастья. Опыт 5 лет, люблю флэт-минимализм и типографику.</p>
+                    <p id="user-bio" class="text-sm leading-relaxed">Описнаие</p>
                 </div>
                 
                 <div id="bio-edit-wrapper" class="hidden space-y-3">
@@ -424,7 +425,7 @@
             // ==========================================
             const i18n = {
                 ru: {
-                    overview: "Обзор",
+                    overview: "Главная",
                     tasks_board: "Заказов на бирже",
                     find_requests: "Найди работу по душе",
                     tasks: "Заказы",
@@ -610,7 +611,7 @@
             // ==========================================
             const platformNews = [
                 {
-                    id: 1,
+                    id: 2,
                     title: "Запуск версии 2.0.0",
                     short: "Грандиозный редизайн, живые валюты и фильтры категорий.",
                     full: "Мы полностью переписали и модернизировали дизайн биржи kk!<br><br><b>Что нового:</b><br>• Выпадающие Popover настройки вместо громоздких штор.<br>• Смарт-хедер с постоянным балансом.<br>• Загрузка реальных курсов валют из центральных API.<br>• Фото в заказах теперь сжимается и загружается бесшовно.<br>• Интуитивное редактирование личного профиля.",
@@ -618,12 +619,20 @@
                     time: "11:00"
                 },
                 {
-                    id: 2,
+                    id: 3,
                     title: "Telegram Stars уже здесь!",
                     short: "Оплачивайте фриланс напрямую внутренней валютой мессенджера.",
                     full: "Проводить сделки стало ещё проще.<br><br>В разделе валют теперь можно переключиться на Telegram Stars (⭐). Приложение автоматически конвертирует всю стоимость заказов на основе официального соотношения $ к Stars.",
                     date: "28.05.2026",
                     time: "18:30"
+                },
+                {
+                    id: 1,
+                    title: "Я долбаеб",
+                    short: "жопа жопа жопа хахахаха.",
+                    full: "Сто доооллларов хахаха<br><br><b>Что нового:</b><br>• нихуя♥",
+                    date: "29.05.2026",
+                    time: "16:00"
                 }
             ];
 
