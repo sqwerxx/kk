@@ -659,14 +659,19 @@
                 renderFilteredTasks();
             }
 
-            async function loadTasks() {
-                if (!supabase) return;
-                try {
-                    const { data } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-                    allTasks = data || [];
-                    renderFilteredTasks();
-                } catch (err) {}
-            }
+async function loadTasks() {
+    if (!supabase) return;
+    try {
+        // Фильтруем по статусу 'active', чтобы никто не видел заказы на модерации
+        const { data } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('status', 'active')
+            .order('created_at', { ascending: false });
+        allTasks = data || [];
+        renderFilteredTasks();
+    } catch (err) {}
+}
 
             function renderFilteredTasks() {
                 const listContainer = document.getElementById('tasks-list');
@@ -740,7 +745,7 @@
                 });
             });
 
-            // Форма создания заказа
+// Форма создания заказа
             const taskForm = document.getElementById('task-form');
             if (taskForm) {
                 taskForm.addEventListener('submit', async (e) => {
@@ -751,22 +756,44 @@
                     submitBtn.disabled = true; submitBtn.style.opacity = '0.5';
 
                     try {
-                        const { error } = await supabase.from('tasks').insert([{ 
+                        // Добавляем статус 'pending' и метод .select() в конце, чтобы получить ID созданной записи
+                        const { data: insertedData, error } = await supabase.from('tasks').insert([{ 
                             title: document.getElementById('task-title').value, 
                             description: document.getElementById('task-desc').value, 
                             price: document.getElementById('task-price').value, 
-                            creator_id: user?.id || 'test_user', category: document.getElementById('task-category').value, 
-                            image_url: base64Image, creator_username: user?.username || 'anonymous', creator_avatar: user?.photo_url || ''
-                        }]);
+                            creator_id: user?.id || 'test_user', 
+                            category: document.getElementById('task-category').value, 
+                            image_url: base64Image, 
+                            creator_username: user?.username || 'anonymous', 
+                            creator_avatar: user?.photo_url || '',
+                            status: 'pending' // Заказ уходит на модерацию
+                        }]).select();
+
                         if (error) throw error;
+
+                        // Если запись успешно создана, шлем запрос боту для уведомления админа
+                        if (insertedData && insertedData.length > 0) {
+                            const newTaskId = insertedData[0].id;
+                            
+                            fetch('/api/new-task', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ task_id: newTaskId })
+                            }).catch(err => console.error("Ошибка отправки уведомления боту:", err));
+                        }
+
                         try { tg.HapticFeedback?.notificationOccurred?.('success'); } catch(e){}
-                        tg.showAlert?.('Заказ опубликован!');
+                        tg.showAlert?.('Заказ отправлен на модерацию администратору!');
+                        
                         taskForm.reset(); base64Image = null;
                         document.getElementById('image-preview-container').classList.add('hidden');
                         document.getElementById('image-upload-ui').classList.remove('hidden');
                         updateUI(); switchTab('view-tasks');
-                    } catch (err) { tg.showAlert?.('Ошибка: ' + err.message); } 
-                    finally { submitBtn.disabled = false; submitBtn.style.opacity = '1'; }
+                    } catch (err) { 
+                        tg.showAlert?.('Ошибка: ' + err.message); 
+                    } finally { 
+                        submitBtn.disabled = false; submitBtn.style.opacity = '1'; 
+                    }
                 });
             }
 
